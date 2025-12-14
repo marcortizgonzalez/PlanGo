@@ -6,6 +6,8 @@
 // Incluimos Reserva.hxx aquí porque necesitamos el tipo completo para el vector
 #include "Reserva.hxx" 
 
+class Reserva;
+
 #pragma db object
 class Usuari {
 public:
