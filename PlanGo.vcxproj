@@ -132,6 +132,7 @@
     <ClCompile Include="Experiencia.cxx" />
     <ClCompile Include="PlanGo.cpp" />
     <ClCompile Include="Reserva.cxx" />
+    <ClCompile Include="Usuari.cxx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="configuracio.env" />
@@ -142,6 +143,7 @@
     <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
     <ClInclude Include="Reserva.hxx" />
+    <ClInclude Include="Usuari.hxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
