@@ -129,6 +129,7 @@
     <ClCompile Include="Activitat.cxx" />
     <ClCompile Include="CapaDeDades.cxx" />
     <ClCompile Include="Categoria.cxx" />
+    <ClCompile Include="DTOExperiencia.cxx" />
     <ClCompile Include="Escapada.cxx" />
     <ClCompile Include="Experiencia.cxx" />
     <ClCompile Include="PlanGo.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="Activitat.hxx" />
     <ClInclude Include="CapaDeDades.hxx" />
     <ClInclude Include="Categoria.hxx" />
+    <ClInclude Include="DTOExperiencia.hxx" />
     <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
     <ClInclude Include="Reserva.hxx" />
