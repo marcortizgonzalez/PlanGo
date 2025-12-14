@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Categoria.cxx" />
+    <ClCompile Include="Escapada.cxx" />
     <ClCompile Include="Experiencia.cxx" />
     <ClCompile Include="PlanGo.cpp" />
   </ItemGroup>
@@ -135,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Categoria.hxx" />
+    <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
