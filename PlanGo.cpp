@@ -20,7 +20,7 @@ int main() {
             auto novetats = CapaDeDomini::getInstance().consultarNovetats();
             std::cout << "--- NOVETATS ---" << std::endl;
             for (const auto& dto : novetats) {
-                std::cout << dto.tipus << ": " << dto.nom << " (" << dto.detalls << ")" << std::endl;
+                std::cout << dto.obteTipus() << ": " << dto.obteNom() << " (" << dto.obteDetalls() << ")" << std::endl;
             }
         }
         else if (opcio == 2) {

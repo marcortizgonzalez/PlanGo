@@ -28,21 +28,22 @@ CapaDeDades::CapaDeDades() {
 
 std::vector<std::shared_ptr<Experiencia>> CapaDeDades::totesExperiencies() {
     std::vector<std::shared_ptr<Experiencia>> result_list;
+
     try {
         odb::transaction t(db->begin());
-        // Consulta polimórfica: recupera tanto Escapadas como Actividades
-        odb::result<Experiencia> r(db->query<Experiencia>());
-        for (auto& e : r) {
-            result_list.push_back(std::shared_ptr<Experiencia>(new Experiencia(e))); // ODB devuelve referencia, copiamos o usamos punteros
-            // Nota: En ODB con shared_ptr configurado, 'e' ya debería manejarse bien. 
-            // Si configuraste --default-pointer std::shared_ptr, el iterador devuelve el objeto.
-            // Para simplificar en este ejemplo asumimos carga correcta. 
-            // La forma más segura con polimorfismo en ODB suele ser cargar por ID o iterar punteros.
+
+        // CORRECTE: Consultem la classe base 'Experiencia'.
+        // ODB ja sap que ha de retornar punteros perquè ho vam configurar amb --default-pointer
+        typedef odb::result<Experiencia> result;
+
+        // Executem la consulta
+        result r(db->query<Experiencia>());
+
+        // Iterem. Com que és polimòrfic, 'i.load()' ens donarà el shared_ptr correcte
+        for (result::iterator i(r.begin()); i != r.end(); ++i) {
+            result_list.push_back(i.load());
         }
-        // Corrección para iteración simple con shared_ptr
-        for (auto i = r.begin(); i != r.end(); ++i) {
-            result_list.push_back(std::shared_ptr<Experiencia>(i.load()));
-        }
+
         t.commit();
     }
     catch (const odb::exception& e) {
