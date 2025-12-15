@@ -21,5 +21,6 @@ public:
 
 private:
     CapaDeDades(); // Constructor privado
-    std::unique_ptr<odb::database> db;
+    // std::unique_ptr<odb::database> db;
+    std::shared_ptr<odb::database> db;
 };
