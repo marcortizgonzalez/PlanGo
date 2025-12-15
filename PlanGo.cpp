@@ -1,6 +1,6 @@
 #include <iostream>
 #include "CapaDeDomini.hxx"
-
+// Incluye aquí tus cabeceras necesarias
 
 void mostrarMenu() {
     std::cout << "1. Consultar Novetats" << std::endl;
@@ -9,7 +9,9 @@ void mostrarMenu() {
 }
 
 int main() {
-    CapaDeDomini::getInstance().iniciarSessio("marcortiz");
+    // Simulación: Iniciar sesión con un usuario existente en tu BD
+    // Asegúrate de crear manualmente un usuario en MySQL Workbench para probar
+    CapaDeDomini::getInstance().iniciarSessio("usuario_prueba");
 
     int opcio = -1;
     while (opcio != 0) {

@@ -133,6 +133,7 @@
     <ClCompile Include="CapaDePresentacio.cxx" />
     <ClCompile Include="Categoria-odb.cxx" />
     <ClCompile Include="Categoria.cxx" />
+    <ClCompile Include="ConnexioBD.cxx" />
     <ClCompile Include="DTOExperiencia.cxx" />
     <ClCompile Include="Escapada-odb.cxx" />
     <ClCompile Include="Escapada.cxx" />
@@ -153,6 +154,7 @@
     <ClInclude Include="CapaDeDomini.hxx" />
     <ClInclude Include="CapaDePresentacio.hxx" />
     <ClInclude Include="Categoria.hxx" />
+    <ClInclude Include="ConnexioBD.hxx" />
     <ClInclude Include="DTOExperiencia.hxx" />
     <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
