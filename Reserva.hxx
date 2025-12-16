@@ -16,8 +16,8 @@ class Usuari;
 #pragma db object
 class Reserva {
 public:
-    // Constructor vacío (Requerido por ODB para instanciar objetos desde la BD)
-    Reserva() {}
+    // Inicializamos ID y numéricos
+    Reserva() : id(0), numPlaces(0), preuPagat(0.0) {}
 
     // Constructor con parámetros (Para crear reservas nuevas desde tu código)
     Reserva(int nPlaces, float preu, std::string data,

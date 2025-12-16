@@ -20,9 +20,7 @@ CapaDeDades& CapaDeDades::getInstance() {
 
 CapaDeDades::CapaDeDades() {
     try {
-        // AJUSTA AQUÍ TU USUARIO Y CONTRASEÑA DE MYSQL
-        // ("user", "password", "database", "host", port)
-        // db = std::unique_ptr<odb::database>(new odb::mysql::database("inep08", "xubaasha8Shei6", "inep08", "ubiwan.epsevg.upc.edu", 3306));
+
         this->db = ConnexioBD::getInstance().getDB();
     }
     catch (const odb::exception& e) {
