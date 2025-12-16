@@ -22,8 +22,8 @@ Para ejecutar la aplicación, es necesario configurar la conexión a la base de 
 La aplicación requiere un archivo llamado `configuracio.env` en la misma carpeta que el ejecutable `.exe`.
 El formato debe ser:
 
-DB_USER=inep08
-DB_PASS=xubaasha8Shei6
-DB_NAME=inep08
-DB_HOST=ubiwan.epsevg.upc.edu
-DB_PORT=3306
+- DB_USER=inep08
+- DB_PASS=xubaasha8Shei6
+- DB_NAME=inep08
+- DB_HOST=ubiwan.epsevg.upc.edu
+- DB_PORT=3306
