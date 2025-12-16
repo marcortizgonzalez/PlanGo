@@ -13,10 +13,42 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{da71c545-9d7b-4879-89e5-002884b2d08a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DTO">
+      <UniqueIdentifier>{ac35b914-7f3e-4cef-a633-dd77c461ff4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CapaPresentacio">
+      <UniqueIdentifier>{606a08b0-d46a-4927-ad90-64e189730da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CapaDades">
+      <UniqueIdentifier>{c03ed21f-c100-4764-9b06-d836eab1d2cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CapaDomini">
+      <UniqueIdentifier>{9a4f8ceb-4c5c-477a-9c6f-c3f4683400ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PlanGo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Categoria.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Experiencia.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="configuracio.env" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Categoria.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Experiencia.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
