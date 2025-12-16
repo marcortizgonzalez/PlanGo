@@ -18,7 +18,7 @@ public:
 
 private:
     friend class odb::access;
-    Escapada() {}
+    Escapada() : numNits(0), preu(0.0) {}
 
     std::string hotel;
     int numNits;
