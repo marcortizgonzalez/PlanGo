@@ -12,18 +12,19 @@ public:
 
     // Métodos generales
     std::vector<std::shared_ptr<Experiencia>> totesExperiencies();
-    std::shared_ptr<Usuari> obtenirUsuari(std::string username);
 
-    // Métodos para evitar bloqueos de ODB (Carga manual)
+    // Búsquedas
+    std::shared_ptr<Usuari> obtenirUsuari(std::string sobrenom);
+    std::shared_ptr<Usuari> obtenirUsuariPerCorreu(std::string correu); // NUEVO
+
+    // Reservas
     std::vector<std::shared_ptr<Reserva>> obtenirReservesUsuari(std::shared_ptr<Usuari> u);
 
-    // Métodos de borrado
-    void esborrarReserva(std::shared_ptr<Reserva> r);
-    void esborrarUsuari(std::shared_ptr<Usuari> u);
-
-    // --- BLOQUE A: Gestión Usuarios ---
+    // Modificación
     void insertaUsuari(std::shared_ptr<Usuari> u);
     void modificaUsuari(std::shared_ptr<Usuari> u);
+    void esborrarReserva(std::shared_ptr<Reserva> r);
+    void esborrarUsuari(std::shared_ptr<Usuari> u);
 
 private:
     CapaDeDades();

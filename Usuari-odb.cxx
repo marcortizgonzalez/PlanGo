@@ -54,9 +54,9 @@ namespace odb
           ::std::string,
           mysql::id_string >::set_value (
         id,
-        i.username_value,
-        i.username_size,
-        i.username_null);
+        i.sobrenom_value,
+        i.sobrenom_size,
+        i.sobrenom_null);
     }
 
     return id;
@@ -71,11 +71,11 @@ namespace odb
 
     bool grew (false);
 
-    // username
+    // sobrenom
     //
     if (t[0UL])
     {
-      i.username_value.capacity (i.username_size);
+      i.sobrenom_value.capacity (i.sobrenom_size);
       grew = true;
     }
 
@@ -87,11 +87,11 @@ namespace odb
       grew = true;
     }
 
-    // email
+    // correuElectronic
     //
     if (t[2UL])
     {
-      i.email_value.capacity (i.email_size);
+      i.correuElectronic_value.capacity (i.correuElectronic_size);
       grew = true;
     }
 
@@ -103,13 +103,9 @@ namespace odb
       grew = true;
     }
 
-    // dataNaixement
+    // edat
     //
-    if (t[4UL])
-    {
-      i.dataNaixement_value.capacity (i.dataNaixement_size);
-      grew = true;
-    }
+    t[4UL] = 0;
 
     return grew;
   }
@@ -125,16 +121,16 @@ namespace odb
 
     std::size_t n (0);
 
-    // username
+    // sobrenom
     //
     if (sk != statement_update)
     {
       b[n].buffer_type = MYSQL_TYPE_STRING;
-      b[n].buffer = i.username_value.data ();
+      b[n].buffer = i.sobrenom_value.data ();
       b[n].buffer_length = static_cast<unsigned long> (
-        i.username_value.capacity ());
-      b[n].length = &i.username_size;
-      b[n].is_null = &i.username_null;
+        i.sobrenom_value.capacity ());
+      b[n].length = &i.sobrenom_size;
+      b[n].is_null = &i.sobrenom_null;
       n++;
     }
 
@@ -148,14 +144,14 @@ namespace odb
     b[n].is_null = &i.nom_null;
     n++;
 
-    // email
+    // correuElectronic
     //
     b[n].buffer_type = MYSQL_TYPE_STRING;
-    b[n].buffer = i.email_value.data ();
+    b[n].buffer = i.correuElectronic_value.data ();
     b[n].buffer_length = static_cast<unsigned long> (
-      i.email_value.capacity ());
-    b[n].length = &i.email_size;
-    b[n].is_null = &i.email_null;
+      i.correuElectronic_value.capacity ());
+    b[n].length = &i.correuElectronic_size;
+    b[n].is_null = &i.correuElectronic_null;
     n++;
 
     // contrasenya
@@ -168,14 +164,12 @@ namespace odb
     b[n].is_null = &i.contrasenya_null;
     n++;
 
-    // dataNaixement
+    // edat
     //
-    b[n].buffer_type = MYSQL_TYPE_STRING;
-    b[n].buffer = i.dataNaixement_value.data ();
-    b[n].buffer_length = static_cast<unsigned long> (
-      i.dataNaixement_value.capacity ());
-    b[n].length = &i.dataNaixement_size;
-    b[n].is_null = &i.dataNaixement_null;
+    b[n].buffer_type = MYSQL_TYPE_LONG;
+    b[n].is_unsigned = 0;
+    b[n].buffer = &i.edat_value;
+    b[n].is_null = &i.edat_null;
     n++;
   }
 
@@ -204,26 +198,26 @@ namespace odb
 
     bool grew (false);
 
-    // username
+    // sobrenom
     //
     if (sk == statement_insert)
     {
       ::std::string const& v =
-        o.username;
+        o.sobrenom;
 
       bool is_null (false);
       std::size_t size (0);
-      std::size_t cap (i.username_value.capacity ());
+      std::size_t cap (i.sobrenom_value.capacity ());
       mysql::value_traits<
           ::std::string,
           mysql::id_string >::set_image (
-        i.username_value,
+        i.sobrenom_value,
         size,
         is_null,
         v);
-      i.username_null = is_null;
-      i.username_size = static_cast<unsigned long> (size);
-      grew = grew || (cap != i.username_value.capacity ());
+      i.sobrenom_null = is_null;
+      i.sobrenom_size = static_cast<unsigned long> (size);
+      grew = grew || (cap != i.sobrenom_value.capacity ());
     }
 
     // nom
@@ -247,25 +241,25 @@ namespace odb
       grew = grew || (cap != i.nom_value.capacity ());
     }
 
-    // email
+    // correuElectronic
     //
     {
       ::std::string const& v =
-        o.email;
+        o.correuElectronic;
 
       bool is_null (false);
       std::size_t size (0);
-      std::size_t cap (i.email_value.capacity ());
+      std::size_t cap (i.correuElectronic_value.capacity ());
       mysql::value_traits<
           ::std::string,
           mysql::id_string >::set_image (
-        i.email_value,
+        i.correuElectronic_value,
         size,
         is_null,
         v);
-      i.email_null = is_null;
-      i.email_size = static_cast<unsigned long> (size);
-      grew = grew || (cap != i.email_value.capacity ());
+      i.correuElectronic_null = is_null;
+      i.correuElectronic_size = static_cast<unsigned long> (size);
+      grew = grew || (cap != i.correuElectronic_value.capacity ());
     }
 
     // contrasenya
@@ -289,25 +283,18 @@ namespace odb
       grew = grew || (cap != i.contrasenya_value.capacity ());
     }
 
-    // dataNaixement
+    // edat
     //
     {
-      ::std::string const& v =
-        o.dataNaixement;
+      int const& v =
+        o.edat;
 
       bool is_null (false);
-      std::size_t size (0);
-      std::size_t cap (i.dataNaixement_value.capacity ());
       mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_image (
-        i.dataNaixement_value,
-        size,
-        is_null,
-        v);
-      i.dataNaixement_null = is_null;
-      i.dataNaixement_size = static_cast<unsigned long> (size);
-      grew = grew || (cap != i.dataNaixement_value.capacity ());
+          int,
+          mysql::id_long >::set_image (
+        i.edat_value, is_null, v);
+      i.edat_null = is_null;
     }
 
     return grew;
@@ -322,19 +309,19 @@ namespace odb
     ODB_POTENTIALLY_UNUSED (i);
     ODB_POTENTIALLY_UNUSED (db);
 
-    // username
+    // sobrenom
     //
     {
       ::std::string& v =
-        o.username;
+        o.sobrenom;
 
       mysql::value_traits<
           ::std::string,
           mysql::id_string >::set_value (
         v,
-        i.username_value,
-        i.username_size,
-        i.username_null);
+        i.sobrenom_value,
+        i.sobrenom_size,
+        i.sobrenom_null);
     }
 
     // nom
@@ -352,19 +339,19 @@ namespace odb
         i.nom_null);
     }
 
-    // email
+    // correuElectronic
     //
     {
       ::std::string& v =
-        o.email;
+        o.correuElectronic;
 
       mysql::value_traits<
           ::std::string,
           mysql::id_string >::set_value (
         v,
-        i.email_value,
-        i.email_size,
-        i.email_null);
+        i.correuElectronic_value,
+        i.correuElectronic_size,
+        i.correuElectronic_null);
     }
 
     // contrasenya
@@ -382,19 +369,18 @@ namespace odb
         i.contrasenya_null);
     }
 
-    // dataNaixement
+    // edat
     //
     {
-      ::std::string& v =
-        o.dataNaixement;
+      int& v =
+        o.edat;
 
       mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_value (
+          int,
+          mysql::id_long >::set_value (
         v,
-        i.dataNaixement_value,
-        i.dataNaixement_size,
-        i.dataNaixement_null);
+        i.edat_value,
+        i.edat_null);
     }
   }
 
@@ -424,44 +410,44 @@ namespace odb
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::persist_statement[] =
   "INSERT INTO `Usuari` "
-  "(`username`, "
+  "(`sobrenom`, "
   "`nom`, "
-  "`email`, "
+  "`correuElectronic`, "
   "`contrasenya`, "
-  "`dataNaixement`) "
+  "`edat`) "
   "VALUES "
   "(?, ?, ?, ?, ?)";
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::find_statement[] =
   "SELECT "
-  "`Usuari`.`username`, "
+  "`Usuari`.`sobrenom`, "
   "`Usuari`.`nom`, "
-  "`Usuari`.`email`, "
+  "`Usuari`.`correuElectronic`, "
   "`Usuari`.`contrasenya`, "
-  "`Usuari`.`dataNaixement` "
+  "`Usuari`.`edat` "
   "FROM `Usuari` "
-  "WHERE `Usuari`.`username`=?";
+  "WHERE `Usuari`.`sobrenom`=?";
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::update_statement[] =
   "UPDATE `Usuari` "
   "SET "
   "`nom`=?, "
-  "`email`=?, "
+  "`correuElectronic`=?, "
   "`contrasenya`=?, "
-  "`dataNaixement`=? "
-  "WHERE `username`=?";
+  "`edat`=? "
+  "WHERE `sobrenom`=?";
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::erase_statement[] =
   "DELETE FROM `Usuari` "
-  "WHERE `username`=?";
+  "WHERE `sobrenom`=?";
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::query_statement[] =
   "SELECT "
-  "`Usuari`.`username`, "
+  "`Usuari`.`sobrenom`, "
   "`Usuari`.`nom`, "
-  "`Usuari`.`email`, "
+  "`Usuari`.`correuElectronic`, "
   "`Usuari`.`contrasenya`, "
-  "`Usuari`.`dataNaixement` "
+  "`Usuari`.`edat` "
   "FROM `Usuari`";
 
   const char access::object_traits_impl< ::Usuari, id_mysql >::erase_query_statement[] =

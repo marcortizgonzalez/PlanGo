@@ -4,7 +4,6 @@
 #include <odb/core.hxx>
 #include "Experiencia.hxx"
 
-// CAMBIO 3: Aquí SÍ incluimos Usuari.hxx con total normalidad.
 #include "Usuari.hxx"
 
 #pragma db object
