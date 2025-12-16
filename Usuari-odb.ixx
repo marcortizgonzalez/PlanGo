@@ -49,5 +49,15 @@ namespace odb
     erase (db, id (obj));
     callback (db, obj, callback_event::post_erase);
   }
+
+  inline
+  void access::object_traits_impl< ::Usuari, id_mysql >::
+  load_ (statements_type& sts,
+         object_type& obj,
+         bool)
+  {
+    ODB_POTENTIALLY_UNUSED (sts);
+    ODB_POTENTIALLY_UNUSED (obj);
+  }
 }
 

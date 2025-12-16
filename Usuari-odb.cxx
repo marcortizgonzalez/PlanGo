@@ -31,173 +31,15 @@ namespace odb
 
   struct access::object_traits_impl< ::Usuari, id_mysql >::extra_statement_cache_type
   {
-    mysql::container_statements_impl< reserves_traits > reserves;
-
     extra_statement_cache_type (
-      mysql::connection& c,
+      mysql::connection&,
       image_type&,
       id_image_type&,
-      mysql::binding& id,
+      mysql::binding&,
       mysql::binding&)
-    : reserves (c, id)
     {
     }
   };
-
-  // reserves
-  //
-
-  const char access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  select_statement[] =
-  "SELECT "
-  "`Reserva`.`id` "
-  "FROM `Reserva` "
-  "WHERE `Reserva`.`usuari`=?";
-
-  const char access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  insert_statement[] =
-  "";
-
-  const char access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  delete_statement[] =
-  "";
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  bind (MYSQL_BIND* b,
-        const MYSQL_BIND* id,
-        std::size_t id_size,
-        data_image_type& d)
-  {
-    using namespace mysql;
-
-    statement_kind sk (statement_select);
-    ODB_POTENTIALLY_UNUSED (sk);
-
-    size_t n (0);
-
-    // object_id
-    //
-    if (id != 0)
-      std::memcpy (&b[n], id, id_size * sizeof (id[0]));
-    n += id_size;
-
-    // value
-    //
-    b[n].buffer_type = MYSQL_TYPE_LONGLONG;
-    b[n].is_unsigned = 1;
-    b[n].buffer = &d.value_value;
-    b[n].is_null = &d.value_null;
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  grow (data_image_type& i,
-        my_bool* t)
-  {
-    bool grew (false);
-
-    // value
-    //
-    t[0UL] = 0;
-
-    if (grew)
-      i.version++;
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  init (value_type& v,
-        const data_image_type& i,
-        database* db)
-  {
-    ODB_POTENTIALLY_UNUSED (db);
-
-    // value
-    //
-    {
-      typedef object_traits< ::Reserva > obj_traits;
-      typedef odb::pointer_traits< value_type > ptr_traits;
-
-      if (i.value_null)
-        v = ptr_traits::pointer_type ();
-      else
-      {
-        obj_traits::id_type ptr_id;
-        mysql::value_traits<
-            obj_traits::id_type,
-            mysql::id_ulonglong >::set_value (
-          ptr_id,
-          i.value_value,
-          i.value_null);
-
-        // If a compiler error points to the line below, then
-        // it most likely means that a pointer used in a member
-        // cannot be initialized from an object pointer.
-        //
-        v = ptr_traits::pointer_type (
-          static_cast<mysql::database*> (db)->load<
-            obj_traits::object_type > (ptr_id));
-      }
-    }
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  insert (index_type, const value_type&, void*)
-  {
-  }
-
-  bool access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  select (index_type&, value_type& v, void* d)
-  {
-    using namespace mysql;
-    using mysql::select_statement;
-
-    statements_type& sts (*static_cast< statements_type* > (d));
-    data_image_type& di (sts.data_image ());
-
-    init (v, di, &sts.connection ().database ());
-
-    if (sts.data_binding_test_version ())
-    {
-      const binding& id (sts.id_binding ());
-      bind (sts.data_bind (), id.bind, id.count, di);
-      sts.data_binding_update_version ();
-    }
-
-    select_statement& st (sts.select_statement ());
-    select_statement::result r (st.fetch ());
-    return r != select_statement::no_data;
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  delete_ (void*)
-  {
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::reserves_traits::
-  load (container_type& c,
-        statements_type& sts)
-  {
-    using namespace mysql;
-    using mysql::select_statement;
-
-    const binding& id (sts.id_binding ());
-
-    if (sts.data_binding_test_version ())
-    {
-      bind (sts.data_bind (), id.bind, id.count, sts.data_image ());
-      sts.data_binding_update_version ();
-    }
-
-    select_statement& st (sts.select_statement ());
-    st.execute ();
-    auto_result ar (st);
-    st.cache ();
-    select_statement::result r (st.fetch ());
-    bool more (r != select_statement::no_data);
-
-    functions_type& fs (sts.functions ());
-    fs.ordered_ = false;
-    container_traits_type::load (c, more, fs);
-  }
 
   access::object_traits_impl< ::Usuari, id_mysql >::id_type
   access::object_traits_impl< ::Usuari, id_mysql >::
@@ -919,27 +761,6 @@ namespace odb
     }
 
     return r != select_statement::no_data;
-  }
-
-  void access::object_traits_impl< ::Usuari, id_mysql >::
-  load_ (statements_type& sts,
-         object_type& obj,
-         bool reload)
-  {
-    ODB_POTENTIALLY_UNUSED (reload);
-
-    extra_statement_cache_type& esc (sts.extra_statement_cache ());
-
-    // reserves
-    //
-    {
-      ::std::vector< ::std::shared_ptr< ::Reserva > >& v =
-        obj.reserves;
-
-      reserves_traits::load (
-        v,
-        esc.reserves);
-    }
   }
 
   result< access::object_traits_impl< ::Usuari, id_mysql >::object_type >

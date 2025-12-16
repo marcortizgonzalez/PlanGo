@@ -3,9 +3,9 @@
 #include <vector>
 #include <memory>
 #include <odb/core.hxx>
-// Incluimos Reserva.hxx aquí porque necesitamos el tipo completo para el vector
-#include "Reserva.hxx" 
 
+// CAMBIO 1: No incluimos Reserva.hxx aquí.
+// Usamos Forward Declaration para que C++ sepa que existe el nombre.
 class Reserva;
 
 #pragma db object
@@ -18,7 +18,6 @@ public:
     const std::string& getContrasenya() const { return contrasenya; }
     const std::string& getUsername() const { return username; }
 
-    // Acceso a las reservas del usuario
     std::vector<std::shared_ptr<Reserva>>& getReserves() { return reserves; }
 
 private:
@@ -33,9 +32,9 @@ private:
     std::string contrasenya;
     std::string dataNaixement;
 
-    // Relación 1:N inversa (Reserva tiene un puntero 'usuari')
-    // value_not_null asegura punteros válidos
-    // cascade(delete) es opcional, pero útil: si borras usuario, ODB puede borrar reservas (aunque en diseño dijimos de hacerlo manual)
-#pragma db value_not_null inverse(usuari) 
+    // CAMBIO 2: ¡La Clave! Marcamos esto como 'transient'.
+    // ODB ignorará esta lista, rompiendo el ciclo y evitando el error.
+    // Como ya las cargas manualmente en CapaDeDades, no hace falta que ODB lo haga.
+#pragma db transient
     std::vector<std::shared_ptr<Reserva>> reserves;
 };
