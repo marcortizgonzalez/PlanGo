@@ -4,26 +4,28 @@
 #include <string>
 #include "Usuari.hxx"
 #include "DTOExperiencia.hxx"
-#include "DTOUsuari.hxx" // Necesario para consultarUsuari
+#include "DTOUsuari.hxx"
 
 class CapaDeDomini {
 public:
     static CapaDeDomini& getInstance();
 
-    // Gestión de Sesión (AHORA CON 2 ARGUMENTOS)
     void iniciarSessio(std::string username, std::string contrasenya);
     std::shared_ptr<Usuari> getUsuariLoggejat() const { return usuariLoggejat; }
     void tancarSessio() { usuariLoggejat = nullptr; }
 
     // BLOQUE A: Gestión Usuarios
-    void registrarUsuari(std::string nom, std::string user, std::string mail,
-        std::string pass, std::string dataN);
+    // DataN ahora es 'int edat'
+    void registrarUsuari(std::string nom, std::string sobrenom, std::string correu,
+        std::string pass, int edat);
+
     DTOUsuari consultarUsuari();
-    void modificarUsuari(std::string nouNom, std::string nouMail,
-        std::string novaPass, std::string novaData);
+
+    // Modificar: recibe strings. Si están vacíos, no se cambian. 'nouEdat' es int (-1 si no cambia).
+    void modificarUsuari(std::string nouNom, std::string nouCorreu, int nouEdat);
+
     void esborrarUsuari(std::string contrasenya);
 
-    // BLOQUE C: Consultas
     std::vector<DTOExperiencia> consultarNovetats();
 
 private:

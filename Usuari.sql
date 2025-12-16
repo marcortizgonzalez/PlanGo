@@ -5,10 +5,10 @@
 DROP TABLE IF EXISTS `Usuari`;
 
 CREATE TABLE `Usuari` (
-  `username` VARCHAR(128) NOT NULL PRIMARY KEY,
+  `sobrenom` VARCHAR(128) NOT NULL PRIMARY KEY,
   `nom` TEXT NOT NULL,
-  `email` TEXT NOT NULL,
+  `correuElectronic` TEXT NOT NULL,
   `contrasenya` TEXT NOT NULL,
-  `dataNaixement` TEXT NOT NULL)
+  `edat` INT NOT NULL)
  ENGINE=InnoDB;
 

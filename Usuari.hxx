@@ -4,50 +4,45 @@
 #include <memory>
 #include <odb/core.hxx>
 
-// Forward declaration
 class Reserva;
 
 #pragma db object
 class Usuari {
 public:
-    // Constructor completo
-    Usuari(std::string u, std::string n, std::string mail, std::string pass, std::string dataN)
-        : username(u), nom(n), email(mail), contrasenya(pass), dataNaixement(dataN) {
+    // Constructor adaptado a los nuevos tipos (edat es int)
+    Usuari(std::string sobrenom, std::string nom, std::string correu, std::string pass, int edat)
+        : sobrenom(sobrenom), nom(nom), correuElectronic(correu), contrasenya(pass), edat(edat) {
     }
 
-    // --- GETTERS (Lectura) ---
-    const std::string& getUsername() const { return username; }
-    // Alias para compatibilidad con tu código de Dominio:
-    const std::string& getSobrenom() const { return username; }
-
+    // --- GETTERS ---
+    const std::string& getSobrenom() const { return sobrenom; } // ID
     const std::string& getNom() const { return nom; }
-    const std::string& getEmail() const { return email; }
+    const std::string& getCorreuElectronic() const { return correuElectronic; }
     const std::string& getContrasenya() const { return contrasenya; }
-    const std::string& getDataNaixement() const { return dataNaixement; }
+    int getEdat() const { return edat; }
+    // Getter de compatibilidad por si alguna parte antigua llama a getUsername
+    const std::string& getUsername() const { return sobrenom; }
 
-    // --- SETTERS (Escritura - Para ModificarUsuari) ---
+    // --- SETTERS ---
     void setNom(const std::string& n) { nom = n; }
-    void setEmail(const std::string& e) { email = e; }
+    void setCorreuElectronic(const std::string& c) { correuElectronic = c; }
     void setContrasenya(const std::string& c) { contrasenya = c; }
-    void setDataNaixement(const std::string& d) { dataNaixement = d; }
+    void setEdat(int e) { edat = e; }
 
-    // Acceso al vector (aunque ODB no lo guarde automáticamente)
     std::vector<std::shared_ptr<Reserva>>& getReserves() { return reserves; }
 
 private:
     friend class odb::access;
-    Usuari() {} // Constructor vacío para ODB
+    Usuari() : edat(0) {}
 
 #pragma db id
-    std::string username;
+    std::string sobrenom; // ID (antes username)
 
     std::string nom;
-    std::string email;
+    std::string correuElectronic; // Antes email
     std::string contrasenya;
-    std::string dataNaixement;
+    int edat; // Antes dataNaixement (string) -> Ahora int
 
-    // IMPORTANTE: 'transient' para que ODB ignore esta lista y no cree bucles infinitos.
-    // La cargaremos manualmente en CapaDeDades.
 #pragma db transient
     std::vector<std::shared_ptr<Reserva>> reserves;
 };

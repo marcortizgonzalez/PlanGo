@@ -14,7 +14,7 @@ namespace odb
   access::object_traits< ::Usuari >::
   id (const object_type& o)
   {
-    return o.username;
+    return o.sobrenom;
   }
 
   inline
