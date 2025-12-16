@@ -135,6 +135,8 @@
     <ClCompile Include="Categoria.cxx" />
     <ClCompile Include="ConnexioBD.cxx" />
     <ClCompile Include="DTOExperiencia.cxx" />
+    <ClCompile Include="DTOReserva.cxx" />
+    <ClCompile Include="DTOUsuari.cxx" />
     <ClCompile Include="Escapada-odb.cxx" />
     <ClCompile Include="Escapada.cxx" />
     <ClCompile Include="Experiencia-odb.cxx" />
@@ -156,6 +158,8 @@
     <ClInclude Include="Categoria.hxx" />
     <ClInclude Include="ConnexioBD.hxx" />
     <ClInclude Include="DTOExperiencia.hxx" />
+    <ClInclude Include="DTOReserva.hxx" />
+    <ClInclude Include="DTOUsuari.hxx" />
     <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
     <ClInclude Include="Reserva.hxx" />

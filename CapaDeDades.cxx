@@ -1,16 +1,14 @@
 #include "CapaDeDades.hxx"
+#include "ConnexioBD.hxx"
+#include <iostream>
 #include <odb/mysql/database.hxx>
 #include <odb/transaction.hxx>
-#include <odb/schema-catalog.hxx>
-#include <iostream>
 
-#include "ConnexioBD.hxx"
-
-// Includes de los archivos generados por ODB (¡Importante!)
+// Includes ODB
 #include "Experiencia-odb.hxx"
 #include "Usuari-odb.hxx"
 #include "Reserva-odb.hxx"
-#include "Escapada-odb.hxx" // Necesario para polimorfismo
+#include "Escapada-odb.hxx"
 #include "Activitat-odb.hxx"
 
 CapaDeDades& CapaDeDades::getInstance() {
@@ -20,51 +18,89 @@ CapaDeDades& CapaDeDades::getInstance() {
 
 CapaDeDades::CapaDeDades() {
     try {
-        // AJUSTA AQUÍ TU USUARIO Y CONTRASEÑA DE MYSQL
-        // ("user", "password", "database", "host", port)
-        // db = std::unique_ptr<odb::database>(new odb::mysql::database("inep08", "xubaasha8Shei6", "inep08", "ubiwan.epsevg.upc.edu", 3306));
         this->db = ConnexioBD::getInstance().getDB();
     }
     catch (const odb::exception& e) {
-        std::cerr << "Error de connexió: " << e.what() << std::endl;
+        std::cerr << "Error connexio: " << e.what() << std::endl;
     }
 }
 
 std::vector<std::shared_ptr<Experiencia>> CapaDeDades::totesExperiencies() {
     std::vector<std::shared_ptr<Experiencia>> result_list;
-
     try {
         odb::transaction t(db->begin());
-
-        // CORRECTE: Consultem la classe base 'Experiencia'.
-        // ODB ja sap que ha de retornar punteros perquè ho vam configurar amb --default-pointer
         typedef odb::result<Experiencia> result;
-
-        // Executem la consulta
         result r(db->query<Experiencia>());
-
-        // Iterem. Com que és polimòrfic, 'i.load()' ens donarà el shared_ptr correcte
         for (result::iterator i(r.begin()); i != r.end(); ++i) {
             result_list.push_back(i.load());
         }
-
         t.commit();
     }
-    catch (const odb::exception& e) {
-        std::cerr << "Error ODB: " << e.what() << std::endl;
-    }
+    catch (...) {}
     return result_list;
 }
 
-std::shared_ptr<Usuari> CapaDeDades::obtenirUsuari(std::string username) {
+std::shared_ptr<Usuari> CapaDeDades::obtenirUsuari(std::string sobrenom) {
     std::shared_ptr<Usuari> u;
     try {
         odb::transaction t(db->begin());
-        u = db->load<Usuari>(username);
+        u = db->find<Usuari>(sobrenom);
         t.commit();
     }
-    catch (...) {} // Si no existe, devuelve null
+    catch (...) {}
     return u;
+}
+
+// Buscar por correo electrónico para validaciones
+std::shared_ptr<Usuari> CapaDeDades::obtenirUsuariPerCorreu(std::string correu) {
+    std::shared_ptr<Usuari> u;
+    try {
+        odb::transaction t(db->begin());
+        typedef odb::query<Usuari> query;
+        // Consulta ODB buscando por el campo 'correuElectronic'
+        u = db->query_one<Usuari>(query::correuElectronic == correu);
+        t.commit();
+    }
+    catch (...) {}
+    return u;
+}
+
+std::vector<std::shared_ptr<Reserva>> CapaDeDades::obtenirReservesUsuari(std::shared_ptr<Usuari> u) {
+    std::vector<std::shared_ptr<Reserva>> llista;
+    try {
+        odb::transaction t(db->begin());
+        typedef odb::query<Reserva> query;
+        typedef odb::result<Reserva> result;
+        result r(db->query<Reserva>(query::usuari == u->getSobrenom()));
+        for (auto& res : r) {
+            llista.push_back(std::make_shared<Reserva>(res));
+        }
+        t.commit();
+    }
+    catch (...) {}
+    return llista;
+}
+
+void CapaDeDades::insertaUsuari(std::shared_ptr<Usuari> u) {
+    try {
+        odb::transaction t(db->begin());
+        db->persist(u);
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        throw std::runtime_error("Error SQL Insert: " + std::string(e.what()));
+    }
+}
+
+void CapaDeDades::modificaUsuari(std::shared_ptr<Usuari> u) {
+    try {
+        odb::transaction t(db->begin());
+        db->update(u);
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        throw std::runtime_error("Error SQL Update: " + std::string(e.what()));
+    }
 }
 
 void CapaDeDades::esborrarReserva(std::shared_ptr<Reserva> r) {
@@ -73,9 +109,7 @@ void CapaDeDades::esborrarReserva(std::shared_ptr<Reserva> r) {
         db->erase(r);
         t.commit();
     }
-    catch (const odb::exception& e) {
-        std::cerr << "Error esborrant reserva: " << e.what() << std::endl;
-    }
+    catch (...) {}
 }
 
 void CapaDeDades::esborrarUsuari(std::shared_ptr<Usuari> u) {
@@ -84,7 +118,5 @@ void CapaDeDades::esborrarUsuari(std::shared_ptr<Usuari> u) {
         db->erase(u);
         t.commit();
     }
-    catch (const odb::exception& e) {
-        std::cerr << "Error esborrant usuari: " << e.what() << std::endl;
-    }
+    catch (...) {}
 }

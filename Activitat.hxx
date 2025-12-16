@@ -17,7 +17,7 @@ public:
 
 private:
     friend class odb::access;
-    Activitat() {}
+    Activitat() : durada(0), preuPersona(0.0) {}
 
     int durada;
     float preuPersona;

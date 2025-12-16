@@ -4,19 +4,19 @@
 
 class DTOExperiencia {
 public:
-    // Constructor complet
+    // Constructor completo que usa tu CapaDeDomini
     DTOExperiencia(std::string t, std::string n, std::string d, std::string c,
         int maxP, std::string det, std::vector<std::string> cats)
         : tipus(t), nom(n), descripcio(d), ciutat(c), maximPlaces(maxP), detalls(det), categories(cats) {
     }
 
-    // Getters necessaris per a la Capa de Presentació
+    // Getters utilizados en tu CapaDePresentacio antigua
     std::string obteTipus() const { return tipus; }
     std::string obteNom() const { return nom; }
     std::string obteDescripcio() const { return descripcio; }
     std::string obteCiutat() const { return ciutat; }
     int obteMaximPlaces() const { return maximPlaces; }
-    std::string obteDetalls() const { return detalls; }
+    std::string obteDetalls() const { return detalls; } // Para mostrar "Hotel: X" o "Durada: Y"
     std::vector<std::string> obteCategories() const { return categories; }
 
 private:

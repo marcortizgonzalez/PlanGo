@@ -17,10 +17,6 @@
 
 #include "Usuari.hxx"
 
-#include "Categoria-odb.hxx"
-#include "Experiencia-odb.hxx"
-#include "Reserva-odb.hxx"
-
 #include <memory>
 #include <cstddef>
 #include <utility>
@@ -103,7 +99,7 @@ namespace odb
   template <typename A>
   struct query_columns< ::Usuari, id_mysql, A >
   {
-    // username
+    // sobrenom
     //
     typedef
     mysql::query_column<
@@ -111,9 +107,9 @@ namespace odb
         ::std::string,
         mysql::id_string >::query_type,
       mysql::id_string >
-    username_type_;
+    sobrenom_type_;
 
-    static const username_type_ username;
+    static const sobrenom_type_ sobrenom;
 
     // nom
     //
@@ -127,7 +123,7 @@ namespace odb
 
     static const nom_type_ nom;
 
-    // email
+    // correuElectronic
     //
     typedef
     mysql::query_column<
@@ -135,9 +131,9 @@ namespace odb
         ::std::string,
         mysql::id_string >::query_type,
       mysql::id_string >
-    email_type_;
+    correuElectronic_type_;
 
-    static const email_type_ email;
+    static const correuElectronic_type_ correuElectronic;
 
     // contrasenya
     //
@@ -151,23 +147,23 @@ namespace odb
 
     static const contrasenya_type_ contrasenya;
 
-    // dataNaixement
+    // edat
     //
     typedef
     mysql::query_column<
       mysql::value_traits<
-        ::std::string,
-        mysql::id_string >::query_type,
-      mysql::id_string >
-    dataNaixement_type_;
+        int,
+        mysql::id_long >::query_type,
+      mysql::id_long >
+    edat_type_;
 
-    static const dataNaixement_type_ dataNaixement;
+    static const edat_type_ edat;
   };
 
   template <typename A>
-  const typename query_columns< ::Usuari, id_mysql, A >::username_type_
+  const typename query_columns< ::Usuari, id_mysql, A >::sobrenom_type_
   query_columns< ::Usuari, id_mysql, A >::
-  username (A::table_name, "`username`", 0);
+  sobrenom (A::table_name, "`sobrenom`", 0);
 
   template <typename A>
   const typename query_columns< ::Usuari, id_mysql, A >::nom_type_
@@ -175,9 +171,9 @@ namespace odb
   nom (A::table_name, "`nom`", 0);
 
   template <typename A>
-  const typename query_columns< ::Usuari, id_mysql, A >::email_type_
+  const typename query_columns< ::Usuari, id_mysql, A >::correuElectronic_type_
   query_columns< ::Usuari, id_mysql, A >::
-  email (A::table_name, "`email`", 0);
+  correuElectronic (A::table_name, "`correuElectronic`", 0);
 
   template <typename A>
   const typename query_columns< ::Usuari, id_mysql, A >::contrasenya_type_
@@ -185,9 +181,9 @@ namespace odb
   contrasenya (A::table_name, "`contrasenya`", 0);
 
   template <typename A>
-  const typename query_columns< ::Usuari, id_mysql, A >::dataNaixement_type_
+  const typename query_columns< ::Usuari, id_mysql, A >::edat_type_
   query_columns< ::Usuari, id_mysql, A >::
-  dataNaixement (A::table_name, "`dataNaixement`", 0);
+  edat (A::table_name, "`edat`", 0);
 
   template <typename A>
   struct pointer_query_columns< ::Usuari, id_mysql, A >:
@@ -211,11 +207,11 @@ namespace odb
 
     struct image_type
     {
-      // username
+      // sobrenom
       //
-      details::buffer username_value;
-      unsigned long username_size;
-      my_bool username_null;
+      details::buffer sobrenom_value;
+      unsigned long sobrenom_size;
+      my_bool sobrenom_null;
 
       // nom
       //
@@ -223,11 +219,11 @@ namespace odb
       unsigned long nom_size;
       my_bool nom_null;
 
-      // email
+      // correuElectronic
       //
-      details::buffer email_value;
-      unsigned long email_size;
-      my_bool email_null;
+      details::buffer correuElectronic_value;
+      unsigned long correuElectronic_size;
+      my_bool correuElectronic_null;
 
       // contrasenya
       //
@@ -235,78 +231,15 @@ namespace odb
       unsigned long contrasenya_size;
       my_bool contrasenya_null;
 
-      // dataNaixement
+      // edat
       //
-      details::buffer dataNaixement_value;
-      unsigned long dataNaixement_size;
-      my_bool dataNaixement_null;
+      int edat_value;
+      my_bool edat_null;
 
       std::size_t version;
     };
 
     struct extra_statement_cache_type;
-
-    // reserves
-    //
-    struct reserves_traits
-    {
-      static const std::size_t id_column_count = 1UL;
-      static const std::size_t data_column_count = 2UL;
-
-      static const bool versioned = false;
-
-      static const char insert_statement[];
-      static const char select_statement[];
-      static const char delete_statement[];
-
-      typedef ::std::vector< ::std::shared_ptr< ::Reserva > > container_type;
-      typedef
-      odb::access::container_traits<container_type>
-      container_traits_type;
-      typedef container_traits_type::index_type index_type;
-      typedef container_traits_type::value_type value_type;
-
-      typedef ordered_functions<index_type, value_type> functions_type;
-      typedef mysql::container_statements< reserves_traits > statements_type;
-
-      struct data_image_type
-      {
-        // value
-        //
-        unsigned long long value_value;
-        my_bool value_null;
-
-        std::size_t version;
-      };
-
-      static void
-      bind (MYSQL_BIND*,
-            const MYSQL_BIND* id,
-            std::size_t id_size,
-            data_image_type&);
-
-      static void
-      grow (data_image_type&,
-            my_bool*);
-
-      static void
-      init (value_type&,
-            const data_image_type&,
-            database*);
-
-      static void
-      insert (index_type, const value_type&, void*);
-
-      static bool
-      select (index_type&, value_type&, void*);
-
-      static void
-      delete_ (void*);
-
-      static void
-      load (container_type&,
-            statements_type&);
-    };
 
     using object_traits<object_type>::id;
 

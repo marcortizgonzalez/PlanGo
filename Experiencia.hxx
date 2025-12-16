@@ -27,7 +27,8 @@ public:
 
 protected:
     friend class odb::access;
-    Experiencia() {}
+    // Inicializamos numéricos a 0
+    Experiencia() : maximPlaces(0) {}
 
     // Constructor para las hijas
     Experiencia(std::string n, std::string d, std::string c, int maxP, std::string dA)

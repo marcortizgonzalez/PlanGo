@@ -3,39 +3,46 @@
 #include <vector>
 #include <memory>
 #include <odb/core.hxx>
-// Incluimos Reserva.hxx aquí porque necesitamos el tipo completo para el vector
-#include "Reserva.hxx" 
 
 class Reserva;
 
 #pragma db object
 class Usuari {
 public:
-    Usuari(std::string u, std::string n, std::string mail, std::string pass, std::string dataN)
-        : username(u), nom(n), email(mail), contrasenya(pass), dataNaixement(dataN) {
+    // Constructor adaptado a los nuevos tipos (edat es int)
+    Usuari(std::string sobrenom, std::string nom, std::string correu, std::string pass, int edat)
+        : sobrenom(sobrenom), nom(nom), correuElectronic(correu), contrasenya(pass), edat(edat) {
     }
 
+    // --- GETTERS ---
+    const std::string& getSobrenom() const { return sobrenom; } // ID
+    const std::string& getNom() const { return nom; }
+    const std::string& getCorreuElectronic() const { return correuElectronic; }
     const std::string& getContrasenya() const { return contrasenya; }
-    const std::string& getUsername() const { return username; }
+    int getEdat() const { return edat; }
+    // Getter de compatibilidad por si alguna parte antigua llama a getUsername
+    const std::string& getUsername() const { return sobrenom; }
 
-    // Acceso a las reservas del usuario
+    // --- SETTERS ---
+    void setNom(const std::string& n) { nom = n; }
+    void setCorreuElectronic(const std::string& c) { correuElectronic = c; }
+    void setContrasenya(const std::string& c) { contrasenya = c; }
+    void setEdat(int e) { edat = e; }
+
     std::vector<std::shared_ptr<Reserva>>& getReserves() { return reserves; }
 
 private:
     friend class odb::access;
-    Usuari() {}
+    Usuari() : edat(0) {}
 
 #pragma db id
-    std::string username;
+    std::string sobrenom; // ID (antes username)
 
     std::string nom;
-    std::string email;
+    std::string correuElectronic; // Antes email
     std::string contrasenya;
-    std::string dataNaixement;
+    int edat; // Antes dataNaixement (string) -> Ahora int
 
-    // Relación 1:N inversa (Reserva tiene un puntero 'usuari')
-    // value_not_null asegura punteros válidos
-    // cascade(delete) es opcional, pero útil: si borras usuario, ODB puede borrar reservas (aunque en diseño dijimos de hacerlo manual)
-#pragma db value_not_null inverse(usuari) 
+#pragma db transient
     std::vector<std::shared_ptr<Reserva>> reserves;
 };

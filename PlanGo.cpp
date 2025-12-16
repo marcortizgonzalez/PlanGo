@@ -1,43 +1,37 @@
 #include <iostream>
-#include "CapaDeDomini.hxx"
-// Incluye aquí tus cabeceras necesarias
-
-void mostrarMenu() {
-    std::cout << "1. Consultar Novetats" << std::endl;
-    std::cout << "2. Esborrar Usuari" << std::endl;
-    std::cout << "0. Sortir" << std::endl;
-}
+#include <exception>
+#include <locale> // Opcional, para acentos si se configura
+#include "CapaDePresentacio.hxx"
 
 int main() {
-    // Simulación: Iniciar sesión con un usuario existente en tu BD
-    // Asegúrate de crear manualmente un usuario en MySQL Workbench para probar
-    CapaDeDomini::getInstance().iniciarSessio("usuario_prueba");
-
-    int opcio = -1;
-    while (opcio != 0) {
-        mostrarMenu();
-        std::cin >> opcio;
-
-        if (opcio == 1) {
-            auto novetats = CapaDeDomini::getInstance().consultarNovetats();
-            std::cout << "--- NOVETATS ---" << std::endl;
-            for (const auto& dto : novetats) {
-                std::cout << dto.obteTipus() << ": " << dto.obteNom() << " (" << dto.obteDetalls() << ")" << std::endl;
-            }
-        }
-        else if (opcio == 2) {
-            std::string pwd;
-            std::cout << "Password: ";
-            std::cin >> pwd;
-            try {
-                CapaDeDomini::getInstance().esborrarUsuari(pwd);
-                std::cout << "Esborrat!" << std::endl;
-            }
-            catch (std::exception& e) {
-                std::cout << "Error: " << e.what() << std::endl;
-            }
-        }
+    // Configuración opcional para mostrar acentos en la consola (según Lab 1)
+    try {
+        std::locale::global(std::locale(""));
+    }
+    catch (...) {
+        // Si falla la configuración regional, continuamos sin ella
     }
 
+    try {
+        // --- PUNTO DE ENTRADA ---
+        // Delegamos el control a la Capa de Presentación.
+        // El método inici() contiene el bucle del menú principal (No Loggejat).
+        CapaDePresentacio::getInstance().inici();
+    }
+    catch (const std::exception& e) {
+        // Capturamos cualquier error fatal que no haya sido controlado antes
+        std::cerr << "\nERROR FATAL: " << e.what() << std::endl;
+        system("pause"); // Pausa para leer el error antes de salir
+        return 1;
+    }
+    catch (...) {
+        std::cerr << "\nError desconegut inesperat." << std::endl;
+        system("pause");
+        return 1;
+    }
+
+    // Pausa final para que la ventana no se cierre de golpe al salir ordenadamente
+    // (Útil si ejecutas fuera de Visual Studio o si VS no pausa automáticamente)
+    system("pause");
     return 0;
 }

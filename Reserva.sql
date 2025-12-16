@@ -16,7 +16,7 @@ CREATE TABLE `Reserva` (
 ALTER TABLE `Reserva`
   ADD CONSTRAINT `Reserva_usuari_fk`
     FOREIGN KEY (`usuari`)
-    REFERENCES `Usuari` (`username`),
+    REFERENCES `Usuari` (`sobrenom`),
   ADD CONSTRAINT `Reserva_experiencia_fk`
     FOREIGN KEY (`experiencia`)
     REFERENCES `Experiencia` (`nom`);

@@ -550,7 +550,7 @@ namespace odb
   "`Reserva`.`usuari`,\n"
   "`Reserva`.`experiencia`\n"
   "FROM `Reserva`\n"
-  "LEFT JOIN `Usuari` AS `usuari` ON `usuari`.`username`=`Reserva`.`usuari`\n"
+  "LEFT JOIN `Usuari` AS `usuari` ON `usuari`.`sobrenom`=`Reserva`.`usuari`\n"
   "LEFT JOIN `Experiencia` AS `experiencia_Experiencia` ON `experiencia_Experiencia`.`nom`=`Reserva`.`experiencia`";
 
   const char access::object_traits_impl< ::Reserva, id_mysql >::erase_query_statement[] =
