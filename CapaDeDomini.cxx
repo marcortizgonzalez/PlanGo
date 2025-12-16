@@ -10,46 +10,46 @@ CapaDeDomini& CapaDeDomini::getInstance() {
 }
 
 // --- Gestión de Sesión ---
-// Método auxiliar para simular el login (necesario para saber quién borra el usuario)
-void CapaDeDomini::iniciarSessio(std::string username) {
-    // Pedimos a la capa de datos que busque el usuario
-    usuariLoggejat = CapaDeDades::getInstance().obtenirUsuari(username);
 
-    if (!usuariLoggejat) {
+// CORRECCIÓN: Ahora acepta 2 parámetros
+void CapaDeDomini::iniciarSessio(std::string username, std::string contrasenya) {
+    // 1. Buscamos el usuario en la BD
+    auto usuari = CapaDeDades::getInstance().obtenirUsuari(username);
+
+    // 2. Si no existe, error
+    if (!usuari) {
         throw std::runtime_error("L'usuari no existeix.");
     }
+
+    // 3. Comprobamos contraseña
+    if (usuari->getContrasenya() != contrasenya) {
+        throw std::runtime_error("Contrasenya incorrecta.");
+    }
+
+    // 4. Guardamos sesión
+    usuariLoggejat = usuari;
 }
 
 // --- CASO DE USO: Consultar Novetats ---
 std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
-    // 1. Obtenemos TODAS las experiencias de la Capa de Datos
-    // (Recuerda: recupera tanto Escapadas como Actividades gracias a ODB)
     auto totes = CapaDeDades::getInstance().totesExperiencies();
 
-    // 2. Ordenamos en memoria por fecha de alta (descendente)
-    // Utilizamos una función lambda para comparar
+    // Ordenamos por fecha descendente
     std::sort(totes.begin(), totes.end(),
         [](const std::shared_ptr<Experiencia>& a, const std::shared_ptr<Experiencia>& b) {
-            // Comparamos strings YYYY-MM-DD (funciona alfabéticamente)
             return a->getDataAlta() > b->getDataAlta();
         });
 
-    // 3. Seleccionamos solo las 10 primeras (o menos si no hay tantas)
     std::vector<DTOExperiencia> resultat;
     int limit = std::min((int)totes.size(), 10);
 
     for (int i = 0; i < limit; ++i) {
         auto e = totes[i];
-
-        // 4. Convertimos las Categorías (objetos) a Strings para el DTO
         std::vector<std::string> nomsCategories;
         for (const auto& cat : e->getCategories()) {
             nomsCategories.push_back(cat->getNom());
         }
 
-        // 5. Creamos el DTO usando POLIMORFISMO
-        // e->obteTipus() devolverá "EXPERIÈNCIA" o "ACTIVITAT" según la subclase
-        // e->obteDadesEspecifiques() devolverá el string formateado correcto
         resultat.emplace_back(
             e->obteTipus(),
             e->getNom(),
@@ -60,34 +60,75 @@ std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
             nomsCategories
         );
     }
-
     return resultat;
 }
 
-// --- CASO DE USO: Esborrar Usuari ---
-void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
-    // Precondición: Debe haber un usuario loggeado
-    if (!usuariLoggejat) {
-        throw std::runtime_error("No hi ha cap usuari loggejat.");
+// --- BLOQUE A: GESTIÓN DE USUARIOS ---
+
+void CapaDeDomini::registrarUsuari(std::string nom, std::string user, std::string mail,
+    std::string pass, std::string dataN) {
+    // Validar si ya existe
+    auto existe = CapaDeDades::getInstance().obtenirUsuari(user);
+    if (existe != nullptr) {
+        throw std::runtime_error("L'usuari '" + user + "' ja existeix.");
     }
 
-    // 1. Verificar la contraseña (Lógica de negocio)
+    // Crear y guardar
+    auto nouUsuari = std::make_shared<Usuari>(user, nom, mail, pass, dataN);
+    CapaDeDades::getInstance().insertaUsuari(nouUsuari);
+}
+
+DTOUsuari CapaDeDomini::consultarUsuari() {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
+    int edat = 0;
+    try {
+        if (usuariLoggejat->getDataNaixement().size() >= 4) {
+            int anyNaix = std::stoi(usuariLoggejat->getDataNaixement().substr(0, 4));
+            edat = 2024 - anyNaix;
+        }
+    }
+    catch (...) { edat = 0; }
+
+    // Obtenemos reservas manualmente para evitar error ODB
+    auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
+
+    return DTOUsuari(
+        usuariLoggejat->getNom(),
+        usuariLoggejat->getUsername(),
+        usuariLoggejat->getEmail(),
+        edat,
+        (int)reserves.size()
+    );
+}
+
+void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouMail,
+    std::string novaPass, std::string novaData) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
+    // Actualizamos si el campo no está vacío
+    if (!nouNom.empty()) usuariLoggejat->setNom(nouNom);
+    if (!nouMail.empty()) usuariLoggejat->setEmail(nouMail);
+    if (!novaPass.empty()) usuariLoggejat->setContrasenya(novaPass);
+    if (!novaData.empty()) usuariLoggejat->setDataNaixement(novaData);
+
+    CapaDeDades::getInstance().modificaUsuari(usuariLoggejat);
+}
+
+void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha cap usuari loggejat.");
+
     if (usuariLoggejat->getContrasenya() != contrasenya) {
         throw std::runtime_error("Contrasenya incorrecta.");
     }
 
-    // 2. Obtener las reservas del usuario para borrarlas primero
-    // (Importante: trabajamos sobre una copia del vector para evitar problemas al iterar y borrar)
-    auto reserves = usuariLoggejat->getReserves();
+    // Obtenemos las reservas manualmente
+    auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
 
-    // 3. Borrar cada reserva individualmente
     for (auto& r : reserves) {
         CapaDeDades::getInstance().esborrarReserva(r);
     }
 
-    // 4. Borrar el usuario
     CapaDeDades::getInstance().esborrarUsuari(usuariLoggejat);
-
-    // 5. Cerrar la sesión (Postcondición)
     usuariLoggejat = nullptr;
 }

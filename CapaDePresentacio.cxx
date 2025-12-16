@@ -2,6 +2,7 @@
 #include "CapaDeDomini.hxx"
 #include <iostream>
 #include <limits> 
+#include <string>
 
 using namespace std;
 
@@ -45,7 +46,7 @@ void CapaDePresentacio::inici() {
             break;
         default:
             cout << "Opcio no valida." << endl;
-            pausa(); // Pausa para que el usuario lea el error
+            pausa();
             break;
         }
     }
@@ -53,9 +54,7 @@ void CapaDePresentacio::inici() {
 
 void CapaDePresentacio::menuPrincipal() {
     int opcio = -1;
-    // Bucle del menú principal mientras haya usuario loggeado
     while (opcio != 0 && CapaDeDomini::getInstance().getUsuariLoggejat() != nullptr) {
-        // Menú Principal con sesión
         cout << "\n===== MENU PRINCIPAL (Loggejat) =====" << endl;
         cout << "1. Gestio usuaris" << endl;
         cout << "2. Gestio reserves" << endl;
@@ -98,12 +97,12 @@ void CapaDePresentacio::menuGestioUsuaris() {
         case 2: modificarUsuari(); break;
         case 3:
             esborrarUsuari();
+            // Si se borra el usuario, nos echa al menú principal
             if (CapaDeDomini::getInstance().getUsuariLoggejat() == nullptr) return;
             break;
         case 4:
             tancarSessio();
-            if (CapaDeDomini::getInstance().getUsuariLoggejat() == nullptr) return;
-            break;
+            return; // Salir del submenú
         case 0: break;
         default: cout << "Opcio no valida." << endl; break;
         }
@@ -152,7 +151,7 @@ void CapaDePresentacio::menuConsultes() {
     }
 }
 
-// --- IMPLEMENTACIÓN DE CASOS DE USO (STUBS) ---
+// --- IMPLEMENTACIÓN DE CASOS DE USO ---
 
 void CapaDePresentacio::iniciarSessio() {
     string user, pwd;
@@ -161,15 +160,14 @@ void CapaDePresentacio::iniciarSessio() {
     cout << "Contrasenya: "; cin >> pwd;
 
     try {
-        CapaDeDomini::getInstance().iniciarSessio(user);
-        // TODO: Verificar contraseña también aquí o delegar todo al dominio
+        // Llamada correcta con contraseña
+        CapaDeDomini::getInstance().iniciarSessio(user, pwd);
         cout << "Sessio iniciada correctament!" << endl;
-        pausa();
     }
     catch (exception& e) {
         cout << "Error: " << e.what() << endl;
-        pausa();
     }
+    pausa();
 }
 
 void CapaDePresentacio::tancarSessio() {
@@ -178,28 +176,72 @@ void CapaDePresentacio::tancarSessio() {
     cout << "Vols tancar la sessio (S/N): ";
     cin >> confirm;
     if (confirm == "S" || confirm == "s") {
-        // TODO: Implementar en dominio: CapaDeDomini::getInstance().tancarSessio();
-        // Hack temporal:
-        // CapaDeDomini::getInstance().iniciarSessio(""); // Esto forzará error o logout si se maneja
+        CapaDeDomini::getInstance().tancarSessio();
         cout << "Sessio tancada correctament!" << endl;
-        // La lógica del bucle detectará que hay que salir si implementas el método de dominio para poner a null el usuario
-        // Por ahora, forzamos salida del programa o implementas el método real.
-        exit(0);
     }
 }
 
+// --- AQUÍ ESTABAN LOS [TODO], AHORA IMPLEMENTADOS ---
+
 void CapaDePresentacio::registrarUsuari() {
-    cout << "[TODO] Registrar Usuari - En construccio" << endl;
+    string nom, user, mail, pass, dataN;
+    cout << "\n--- REGISTRAR NOU USUARI ---" << endl;
+    cout << "Nom complet: "; cin >> nom;
+    cout << "Sobrenom: "; cin >> user;
+    cout << "Correu: "; cin >> mail;
+    cout << "Contrasenya: "; cin >> pass;
+    cout << "Data Naixement (AAAA-MM-DD): "; cin >> dataN;
+
+    try {
+        CapaDeDomini::getInstance().registrarUsuari(nom, user, mail, pass, dataN);
+        cout << "Usuari registrat correctament!" << endl;
+    }
+    catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
     pausa();
 }
 
 void CapaDePresentacio::consultarUsuari() {
-    cout << "[TODO] Consultar Usuari - En construccio" << endl;
+    try {
+        DTOUsuari dto = CapaDeDomini::getInstance().consultarUsuari();
+        cout << "\n--- DADES USUARI ---" << endl;
+        cout << "Sobrenom: " << dto.obteSobrenom() << endl;
+        cout << "Nom: " << dto.obteNom() << endl;
+        cout << "Correu: " << dto.obteCorreu() << endl;
+        cout << "Edat: " << dto.obteEdat() << " anys" << endl;
+        cout << "Reserves fetes: " << dto.obteNumReserves() << endl;
+    }
+    catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
     pausa();
 }
 
 void CapaDePresentacio::modificarUsuari() {
-    cout << "[TODO] Modificar Usuari - En construccio" << endl;
+    try {
+        DTOUsuari actual = CapaDeDomini::getInstance().consultarUsuari();
+        cout << "\n--- MODIFICAR USUARI (" << actual.obteSobrenom() << ") ---" << endl;
+        cout << "(Deixa en blanc [posa un guio '-'] si no vols canviar)" << endl;
+
+        string nom, mail, pass, data;
+        cout << "Nou Nom [" << actual.obteNom() << "]: "; cin >> nom;
+        cout << "Nou Correu [" << actual.obteCorreu() << "]: "; cin >> mail;
+        cout << "Nova Contrasenya: "; cin >> pass;
+        cout << "Nova Data: "; cin >> data;
+
+        // Limpieza simple: si el usuario pone un guion, lo tratamos como vacío
+        if (nom == "-") nom = "";
+        if (mail == "-") mail = "";
+        if (pass == "-") pass = "";
+        if (data == "-") data = "";
+
+        CapaDeDomini::getInstance().modificarUsuari(nom, mail, pass, data);
+        cout << "Dades actualitzades correctament." << endl;
+    }
+    catch (exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
     pausa();
 }
 
@@ -217,15 +259,15 @@ void CapaDePresentacio::esborrarUsuari() {
         if (confirmacio == "S" || confirmacio == "s") {
             CapaDeDomini::getInstance().esborrarUsuari(password);
             cout << "Usuari esborrat correctament!" << endl;
-            pausa();
         }
     }
     catch (const std::exception& e) {
         cout << "Error: " << e.what() << endl;
-        pausa();
     }
+    pausa();
 }
 
+// --- ESTOS SIGUEN PENDIENTES (Bloque B y C) ---
 void CapaDePresentacio::reservarEscapada() {
     cout << "[TODO] Reservar Escapada - En construccio" << endl;
     pausa();
@@ -251,16 +293,18 @@ void CapaDePresentacio::consultaNovetats() {
         auto novetats = CapaDeDomini::getInstance().consultarNovetats();
         cout << "\n** Consultar novetats **" << endl;
         for (const auto& dto : novetats) {
-            cout << "[" << dto.obteTipus() << "] Nom: " << dto.obteNom()
-                << ", Ciutat: " << dto.obteCiutat() << endl;
+            cout << "[" << dto.obteTipus() << "] " << dto.obteNom()
+                << " (" << dto.obteCiutat() << ")" << endl;
             cout << "   " << dto.obteDetalls() << endl;
+            cout << "   Categories: ";
+            for (const auto& cat : dto.obteCategories()) cout << cat << " ";
+            cout << endl;
         }
-        pausa();
     }
     catch (exception& e) {
         cout << "Error: " << e.what() << endl;
-        pausa();
     }
+    pausa();
 }
 
 void CapaDePresentacio::consultarMesReservades() {
