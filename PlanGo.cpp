@@ -1,6 +1,6 @@
 #include <iostream>
 #include <exception>
-#include <locale> // Opcional, para acentos si se configura
+#include <locale>
 #include "CapaDePresentacio.hxx"
 
 int main() {
