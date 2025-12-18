@@ -6,8 +6,7 @@ DROP TABLE IF EXISTS `Activitat`;
 
 CREATE TABLE `Activitat` (
   `nom` VARCHAR(128) NOT NULL PRIMARY KEY,
-  `durada` INT NOT NULL,
-  `preuPersona` FLOAT NOT NULL)
+  `durada` INT NOT NULL)
  ENGINE=InnoDB;
 
 ALTER TABLE `Activitat`

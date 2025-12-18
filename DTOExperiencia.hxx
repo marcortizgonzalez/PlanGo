@@ -1,23 +1,21 @@
 #pragma once
 #include <string>
-#include <vector>
 
 class DTOExperiencia {
 public:
-    // Constructor completo que usa tu CapaDeDomini
+    // Constructor actualizado
     DTOExperiencia(std::string t, std::string n, std::string d, std::string c,
-        int maxP, std::string det, std::vector<std::string> cats)
-        : tipus(t), nom(n), descripcio(d), ciutat(c), maximPlaces(maxP), detalls(det), categories(cats) {
+        int maxP, float p, std::string det)
+        : tipus(t), nom(n), descripcio(d), ciutat(c), maximPlaces(maxP), preu(p), detalls(det) {
     }
 
-    // Getters utilizados en tu CapaDePresentacio antigua
     std::string obteTipus() const { return tipus; }
     std::string obteNom() const { return nom; }
     std::string obteDescripcio() const { return descripcio; }
     std::string obteCiutat() const { return ciutat; }
     int obteMaximPlaces() const { return maximPlaces; }
-    std::string obteDetalls() const { return detalls; } // Para mostrar "Hotel: X" o "Durada: Y"
-    std::vector<std::string> obteCategories() const { return categories; }
+    float obtePreu() const { return preu; } // Nuevo
+    std::string obteDetalls() const { return detalls; }
 
 private:
     std::string tipus;
@@ -25,6 +23,6 @@ private:
     std::string descripcio;
     std::string ciutat;
     int maximPlaces;
+    float preu; // Nuevo
     std::string detalls;
-    std::vector<std::string> categories;
 };

@@ -285,6 +285,9 @@ void CapaDePresentacio::consultaNovetats() {
         cout << "\n** Consultar novetats **" << endl;
         for (const auto& dto : novetats) {
             cout << "[" << dto.obteTipus() << "] " << dto.obteNom() << " (" << dto.obteCiutat() << ")" << endl;
+            // Mostramos precio
+            cout << "   Preu: " << dto.obtePreu() << " eur" << endl;
+            cout << "   " << dto.obteDetalls() << endl;
         }
     }
     catch (exception& e) { cout << "Error: " << e.what() << endl; }

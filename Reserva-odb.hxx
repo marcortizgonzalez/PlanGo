@@ -17,7 +17,6 @@
 
 #include "Reserva.hxx"
 
-#include "Categoria-odb.hxx"
 #include "Experiencia-odb.hxx"
 #include "Usuari-odb.hxx"
 
@@ -115,6 +114,18 @@ namespace odb
 
     static const id_type_ id;
 
+    // data
+    //
+    typedef
+    mysql::query_column<
+      mysql::value_traits<
+        ::std::string,
+        mysql::id_string >::query_type,
+      mysql::id_string >
+    data_type_;
+
+    static const data_type_ data;
+
     // numPlaces
     //
     typedef
@@ -138,18 +149,6 @@ namespace odb
     preuPagat_type_;
 
     static const preuPagat_type_ preuPagat;
-
-    // dataReserva
-    //
-    typedef
-    mysql::query_column<
-      mysql::value_traits<
-        ::std::string,
-        mysql::id_string >::query_type,
-      mysql::id_string >
-    dataReserva_type_;
-
-    static const dataReserva_type_ dataReserva;
 
     // usuari
     //
@@ -182,6 +181,11 @@ namespace odb
   id (A::table_name, "`id`", 0);
 
   template <typename A>
+  const typename pointer_query_columns< ::Reserva, id_mysql, A >::data_type_
+  pointer_query_columns< ::Reserva, id_mysql, A >::
+  data (A::table_name, "`data`", 0);
+
+  template <typename A>
   const typename pointer_query_columns< ::Reserva, id_mysql, A >::numPlaces_type_
   pointer_query_columns< ::Reserva, id_mysql, A >::
   numPlaces (A::table_name, "`numPlaces`", 0);
@@ -190,11 +194,6 @@ namespace odb
   const typename pointer_query_columns< ::Reserva, id_mysql, A >::preuPagat_type_
   pointer_query_columns< ::Reserva, id_mysql, A >::
   preuPagat (A::table_name, "`preuPagat`", 0);
-
-  template <typename A>
-  const typename pointer_query_columns< ::Reserva, id_mysql, A >::dataReserva_type_
-  pointer_query_columns< ::Reserva, id_mysql, A >::
-  dataReserva (A::table_name, "`dataReserva`", 0);
 
   template <typename A>
   const typename pointer_query_columns< ::Reserva, id_mysql, A >::usuari_type_
@@ -226,6 +225,12 @@ namespace odb
       unsigned long long id_value;
       my_bool id_null;
 
+      // data
+      //
+      details::buffer data_value;
+      unsigned long data_size;
+      my_bool data_null;
+
       // numPlaces
       //
       int numPlaces_value;
@@ -235,12 +240,6 @@ namespace odb
       //
       float preuPagat_value;
       my_bool preuPagat_null;
-
-      // dataReserva
-      //
-      details::buffer dataReserva_value;
-      unsigned long dataReserva_size;
-      my_bool dataReserva_null;
 
       // usuari
       //
@@ -421,6 +420,18 @@ namespace odb
 
     static const id_type_ id;
 
+    // data
+    //
+    typedef
+    mysql::query_column<
+      mysql::value_traits<
+        ::std::string,
+        mysql::id_string >::query_type,
+      mysql::id_string >
+    data_type_;
+
+    static const data_type_ data;
+
     // numPlaces
     //
     typedef
@@ -444,18 +455,6 @@ namespace odb
     preuPagat_type_;
 
     static const preuPagat_type_ preuPagat;
-
-    // dataReserva
-    //
-    typedef
-    mysql::query_column<
-      mysql::value_traits<
-        ::std::string,
-        mysql::id_string >::query_type,
-      mysql::id_string >
-    dataReserva_type_;
-
-    static const dataReserva_type_ dataReserva;
 
     // usuari
     //
@@ -520,6 +519,11 @@ namespace odb
   id (A::table_name, "`id`", 0);
 
   template <typename A>
+  const typename query_columns< ::Reserva, id_mysql, A >::data_type_
+  query_columns< ::Reserva, id_mysql, A >::
+  data (A::table_name, "`data`", 0);
+
+  template <typename A>
   const typename query_columns< ::Reserva, id_mysql, A >::numPlaces_type_
   query_columns< ::Reserva, id_mysql, A >::
   numPlaces (A::table_name, "`numPlaces`", 0);
@@ -528,11 +532,6 @@ namespace odb
   const typename query_columns< ::Reserva, id_mysql, A >::preuPagat_type_
   query_columns< ::Reserva, id_mysql, A >::
   preuPagat (A::table_name, "`preuPagat`", 0);
-
-  template <typename A>
-  const typename query_columns< ::Reserva, id_mysql, A >::dataReserva_type_
-  query_columns< ::Reserva, id_mysql, A >::
-  dataReserva (A::table_name, "`dataReserva`", 0);
 
   template <typename A>
   const typename query_columns< ::Reserva, id_mysql, A >::usuari_type_

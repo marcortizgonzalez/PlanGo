@@ -57,17 +57,13 @@ namespace odb
     //
     if (--d != 0)
     {
-      if (base_traits::grow (*i.base, t + 2UL))
+      if (base_traits::grow (*i.base, t + 1UL))
         i.base->version++;
     }
 
     // durada
     //
     t[0UL] = 0;
-
-    // preuPersona
-    //
-    t[1UL] = 0;
 
     return grew;
   }
@@ -100,13 +96,6 @@ namespace odb
     b[n].is_unsigned = 0;
     b[n].buffer = &i.durada_value;
     b[n].is_null = &i.durada_null;
-    n++;
-
-    // preuPersona
-    //
-    b[n].buffer_type = MYSQL_TYPE_FLOAT;
-    b[n].buffer = &i.preuPersona_value;
-    b[n].is_null = &i.preuPersona_null;
     n++;
 
     // nom
@@ -151,20 +140,6 @@ namespace odb
       i.durada_null = is_null;
     }
 
-    // preuPersona
-    //
-    {
-      float const& v =
-        o.preuPersona;
-
-      bool is_null (false);
-      mysql::value_traits<
-          float,
-          mysql::id_float >::set_image (
-        i.preuPersona_value, is_null, v);
-      i.preuPersona_null = is_null;
-    }
-
     return grew;
   }
 
@@ -196,20 +171,6 @@ namespace odb
         i.durada_value,
         i.durada_null);
     }
-
-    // preuPersona
-    //
-    {
-      float& v =
-        o.preuPersona;
-
-      mysql::value_traits<
-          float,
-          mysql::id_float >::set_value (
-        v,
-        i.preuPersona_value,
-        i.preuPersona_null);
-    }
   }
 
   const access::object_traits_impl< ::Activitat, id_mysql >::info_type
@@ -228,44 +189,42 @@ namespace odb
   const char access::object_traits_impl< ::Activitat, id_mysql >::persist_statement[] =
   "INSERT INTO `Activitat` "
   "(`nom`, "
-  "`durada`, "
-  "`preuPersona`) "
+  "`durada`) "
   "VALUES "
-  "(?, ?, ?)";
+  "(?, ?)";
 
   const char* const access::object_traits_impl< ::Activitat, id_mysql >::find_statements[] =
   {
     "SELECT "
     "`Activitat`.`durada`, "
-    "`Activitat`.`preuPersona`, "
     "`Experiencia`.`nom`, "
     "`Experiencia`.`typeid`, "
     "`Experiencia`.`descripcio`, "
     "`Experiencia`.`ciutat`, "
     "`Experiencia`.`maximPlaces`, "
-    "`Experiencia`.`dataAlta` "
+    "`Experiencia`.`preu`, "
+    "`Experiencia`.`dataAlta`, "
+    "`Experiencia`.`numReserves` "
     "FROM `Activitat` "
     "LEFT JOIN `Experiencia` ON `Experiencia`.`nom`=`Activitat`.`nom` "
     "WHERE `Activitat`.`nom`=?",
 
     "SELECT "
-    "`Activitat`.`durada`, "
-    "`Activitat`.`preuPersona` "
+    "`Activitat`.`durada` "
     "FROM `Activitat` "
     "WHERE `Activitat`.`nom`=?"
   };
 
   const std::size_t access::object_traits_impl< ::Activitat, id_mysql >::find_column_counts[] =
   {
-    8UL,
-    2UL
+    9UL,
+    1UL
   };
 
   const char access::object_traits_impl< ::Activitat, id_mysql >::update_statement[] =
   "UPDATE `Activitat` "
   "SET "
-  "`durada`=?, "
-  "`preuPersona`=? "
+  "`durada`=? "
   "WHERE `nom`=?";
 
   const char access::object_traits_impl< ::Activitat, id_mysql >::erase_statement[] =
@@ -275,13 +234,14 @@ namespace odb
   const char access::object_traits_impl< ::Activitat, id_mysql >::query_statement[] =
   "SELECT\n"
   "`Activitat`.`durada`,\n"
-  "`Activitat`.`preuPersona`,\n"
   "`Experiencia`.`nom`,\n"
   "`Experiencia`.`typeid`,\n"
   "`Experiencia`.`descripcio`,\n"
   "`Experiencia`.`ciutat`,\n"
   "`Experiencia`.`maximPlaces`,\n"
-  "`Experiencia`.`dataAlta`\n"
+  "`Experiencia`.`preu`,\n"
+  "`Experiencia`.`dataAlta`,\n"
+  "`Experiencia`.`numReserves`\n"
   "FROM `Activitat`\n"
   "LEFT JOIN `Experiencia` ON `Experiencia`.`nom`=`Activitat`.`nom`";
 

@@ -131,8 +131,6 @@
     <ClCompile Include="CapaDeDades.cxx" />
     <ClCompile Include="CapaDeDomini.cxx" />
     <ClCompile Include="CapaDePresentacio.cxx" />
-    <ClCompile Include="Categoria-odb.cxx" />
-    <ClCompile Include="Categoria.cxx" />
     <ClCompile Include="ConnexioBD.cxx" />
     <ClCompile Include="DTOExperiencia.cxx" />
     <ClCompile Include="DTOReserva.cxx" />
@@ -142,6 +140,7 @@
     <ClCompile Include="Experiencia-odb.cxx" />
     <ClCompile Include="Experiencia.cxx" />
     <ClCompile Include="PlanGo.cpp" />
+    <ClCompile Include="PlanGo.cxx" />
     <ClCompile Include="Reserva-odb.cxx" />
     <ClCompile Include="Reserva.cxx" />
     <ClCompile Include="Usuari-odb.cxx" />
@@ -155,13 +154,13 @@
     <ClInclude Include="CapaDeDades.hxx" />
     <ClInclude Include="CapaDeDomini.hxx" />
     <ClInclude Include="CapaDePresentacio.hxx" />
-    <ClInclude Include="Categoria.hxx" />
     <ClInclude Include="ConnexioBD.hxx" />
     <ClInclude Include="DTOExperiencia.hxx" />
     <ClInclude Include="DTOReserva.hxx" />
     <ClInclude Include="DTOUsuari.hxx" />
     <ClInclude Include="Escapada.hxx" />
     <ClInclude Include="Experiencia.hxx" />
+    <ClInclude Include="PlanGo.hxx" />
     <ClInclude Include="Reserva.hxx" />
     <ClInclude Include="Usuari.hxx" />
   </ItemGroup>

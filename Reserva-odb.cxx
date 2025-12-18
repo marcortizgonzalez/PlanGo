@@ -104,21 +104,21 @@ namespace odb
     //
     t[0UL] = 0;
 
-    // numPlaces
+    // data
     //
-    t[1UL] = 0;
+    if (t[1UL])
+    {
+      i.data_value.capacity (i.data_size);
+      grew = true;
+    }
 
-    // preuPagat
+    // numPlaces
     //
     t[2UL] = 0;
 
-    // dataReserva
+    // preuPagat
     //
-    if (t[3UL])
-    {
-      i.dataReserva_value.capacity (i.dataReserva_size);
-      grew = true;
-    }
+    t[3UL] = 0;
 
     // usuari
     //
@@ -161,6 +161,16 @@ namespace odb
       n++;
     }
 
+    // data
+    //
+    b[n].buffer_type = MYSQL_TYPE_STRING;
+    b[n].buffer = i.data_value.data ();
+    b[n].buffer_length = static_cast<unsigned long> (
+      i.data_value.capacity ());
+    b[n].length = &i.data_size;
+    b[n].is_null = &i.data_null;
+    n++;
+
     // numPlaces
     //
     b[n].buffer_type = MYSQL_TYPE_LONG;
@@ -174,16 +184,6 @@ namespace odb
     b[n].buffer_type = MYSQL_TYPE_FLOAT;
     b[n].buffer = &i.preuPagat_value;
     b[n].is_null = &i.preuPagat_null;
-    n++;
-
-    // dataReserva
-    //
-    b[n].buffer_type = MYSQL_TYPE_STRING;
-    b[n].buffer = i.dataReserva_value.data ();
-    b[n].buffer_length = static_cast<unsigned long> (
-      i.dataReserva_value.capacity ());
-    b[n].length = &i.dataReserva_size;
-    b[n].is_null = &i.dataReserva_null;
     n++;
 
     // usuari
@@ -245,6 +245,27 @@ namespace odb
       i.id_null = is_null;
     }
 
+    // data
+    //
+    {
+      ::std::string const& v =
+        o.data;
+
+      bool is_null (false);
+      std::size_t size (0);
+      std::size_t cap (i.data_value.capacity ());
+      mysql::value_traits<
+          ::std::string,
+          mysql::id_string >::set_image (
+        i.data_value,
+        size,
+        is_null,
+        v);
+      i.data_null = is_null;
+      i.data_size = static_cast<unsigned long> (size);
+      grew = grew || (cap != i.data_value.capacity ());
+    }
+
     // numPlaces
     //
     {
@@ -271,27 +292,6 @@ namespace odb
           mysql::id_float >::set_image (
         i.preuPagat_value, is_null, v);
       i.preuPagat_null = is_null;
-    }
-
-    // dataReserva
-    //
-    {
-      ::std::string const& v =
-        o.dataReserva;
-
-      bool is_null (false);
-      std::size_t size (0);
-      std::size_t cap (i.dataReserva_value.capacity ());
-      mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_image (
-        i.dataReserva_value,
-        size,
-        is_null,
-        v);
-      i.dataReserva_null = is_null;
-      i.dataReserva_size = static_cast<unsigned long> (size);
-      grew = grew || (cap != i.dataReserva_value.capacity ());
     }
 
     // usuari
@@ -384,6 +384,21 @@ namespace odb
         i.id_null);
     }
 
+    // data
+    //
+    {
+      ::std::string& v =
+        o.data;
+
+      mysql::value_traits<
+          ::std::string,
+          mysql::id_string >::set_value (
+        v,
+        i.data_value,
+        i.data_size,
+        i.data_null);
+    }
+
     // numPlaces
     //
     {
@@ -410,21 +425,6 @@ namespace odb
         v,
         i.preuPagat_value,
         i.preuPagat_null);
-    }
-
-    // dataReserva
-    //
-    {
-      ::std::string& v =
-        o.dataReserva;
-
-      mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_value (
-        v,
-        i.dataReserva_value,
-        i.dataReserva_size,
-        i.dataReserva_null);
     }
 
     // usuari
@@ -508,9 +508,9 @@ namespace odb
   const char access::object_traits_impl< ::Reserva, id_mysql >::persist_statement[] =
   "INSERT INTO `Reserva` "
   "(`id`, "
+  "`data`, "
   "`numPlaces`, "
   "`preuPagat`, "
-  "`dataReserva`, "
   "`usuari`, "
   "`experiencia`) "
   "VALUES "
@@ -519,9 +519,9 @@ namespace odb
   const char access::object_traits_impl< ::Reserva, id_mysql >::find_statement[] =
   "SELECT "
   "`Reserva`.`id`, "
+  "`Reserva`.`data`, "
   "`Reserva`.`numPlaces`, "
   "`Reserva`.`preuPagat`, "
-  "`Reserva`.`dataReserva`, "
   "`Reserva`.`usuari`, "
   "`Reserva`.`experiencia` "
   "FROM `Reserva` "
@@ -530,9 +530,9 @@ namespace odb
   const char access::object_traits_impl< ::Reserva, id_mysql >::update_statement[] =
   "UPDATE `Reserva` "
   "SET "
+  "`data`=?, "
   "`numPlaces`=?, "
   "`preuPagat`=?, "
-  "`dataReserva`=?, "
   "`usuari`=?, "
   "`experiencia`=? "
   "WHERE `id`=?";
@@ -544,9 +544,9 @@ namespace odb
   const char access::object_traits_impl< ::Reserva, id_mysql >::query_statement[] =
   "SELECT\n"
   "`Reserva`.`id`,\n"
+  "`Reserva`.`data`,\n"
   "`Reserva`.`numPlaces`,\n"
   "`Reserva`.`preuPagat`,\n"
-  "`Reserva`.`dataReserva`,\n"
   "`Reserva`.`usuari`,\n"
   "`Reserva`.`experiencia`\n"
   "FROM `Reserva`\n"

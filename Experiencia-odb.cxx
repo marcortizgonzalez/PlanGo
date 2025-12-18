@@ -33,347 +33,15 @@ namespace odb
 
   struct access::object_traits_impl< ::Experiencia, id_mysql >::extra_statement_cache_type
   {
-    mysql::container_statements_impl< categories_traits > categories;
-
     extra_statement_cache_type (
-      mysql::connection& c,
+      mysql::connection&,
       image_type&,
       id_image_type&,
-      mysql::binding& id,
+      mysql::binding&,
       mysql::binding&)
-    : categories (c, id)
     {
     }
   };
-
-  // categories
-  //
-
-  const char access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  select_statement[] =
-  "SELECT "
-  "`Experiencia_categories`.`index`, "
-  "`Experiencia_categories`.`value` "
-  "FROM `Experiencia_categories` "
-  "WHERE `Experiencia_categories`.`object_id`=? ORDER BY `Experiencia_categories`.`index`";
-
-  const char access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  insert_statement[] =
-  "INSERT INTO `Experiencia_categories` "
-  "(`object_id`, "
-  "`index`, "
-  "`value`) "
-  "VALUES "
-  "(?, ?, ?)";
-
-  const char access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  delete_statement[] =
-  "DELETE FROM `Experiencia_categories` "
-  "WHERE `object_id`=?";
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  bind (MYSQL_BIND* b,
-        const MYSQL_BIND* id,
-        std::size_t id_size,
-        data_image_type& d)
-  {
-    using namespace mysql;
-
-    statement_kind sk (statement_select);
-    ODB_POTENTIALLY_UNUSED (sk);
-
-    size_t n (0);
-
-    // object_id
-    //
-    if (id != 0)
-      std::memcpy (&b[n], id, id_size * sizeof (id[0]));
-    n += id_size;
-
-    // index
-    //
-    b[n].buffer_type = MYSQL_TYPE_LONGLONG;
-    b[n].is_unsigned = 1;
-    b[n].buffer = &d.index_value;
-    b[n].is_null = &d.index_null;
-    n++;
-
-    // value
-    //
-    b[n].buffer_type = MYSQL_TYPE_STRING;
-    b[n].buffer = d.value_value.data ();
-    b[n].buffer_length = static_cast<unsigned long> (
-      d.value_value.capacity ());
-    b[n].length = &d.value_size;
-    b[n].is_null = &d.value_null;
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  grow (data_image_type& i,
-        my_bool* t)
-  {
-    bool grew (false);
-
-    // index
-    //
-    t[0UL] = 0;
-
-    // value
-    //
-    if (t[1UL])
-    {
-      i.value_value.capacity (i.value_size);
-      grew = true;
-    }
-
-    if (grew)
-      i.version++;
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  init (data_image_type& i,
-        index_type* j,
-        const value_type& v)
-  {
-    using namespace mysql;
-
-    statement_kind sk (statement_insert);
-    ODB_POTENTIALLY_UNUSED (sk);
-
-    bool grew (false);
-
-    // index
-    //
-    if (j != 0)
-    {
-      bool is_null (false);
-      mysql::value_traits<
-          index_type,
-          mysql::id_ulonglong >::set_image (
-        i.index_value, is_null, *j);
-      i.index_null = is_null;
-    }
-
-    // value
-    //
-    {
-      typedef object_traits< ::Categoria > obj_traits;
-      typedef odb::pointer_traits< value_type > ptr_traits;
-
-      bool is_null (ptr_traits::null_ptr (v));
-      if (!is_null)
-      {
-        const obj_traits::id_type& ptr_id (
-          obj_traits::id (ptr_traits::get_ref (v)));
-
-        std::size_t size (0);
-        std::size_t cap (i.value_value.capacity ());
-        mysql::value_traits<
-            obj_traits::id_type,
-            mysql::id_string >::set_image (
-          i.value_value,
-          size,
-          is_null,
-          ptr_id);
-        i.value_null = is_null;
-        i.value_size = static_cast<unsigned long> (size);
-        grew = grew || (cap != i.value_value.capacity ());
-      }
-      else
-        i.value_null = 1;
-    }
-
-    if (grew)
-      i.version++;
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  init (index_type& j,
-        value_type& v,
-        const data_image_type& i,
-        database* db)
-  {
-    ODB_POTENTIALLY_UNUSED (db);
-
-    // index
-    //
-    {
-      mysql::value_traits<
-          index_type,
-          mysql::id_ulonglong >::set_value (
-        j,
-        i.index_value,
-        i.index_null);
-    }
-
-    // value
-    //
-    {
-      typedef object_traits< ::Categoria > obj_traits;
-      typedef odb::pointer_traits< value_type > ptr_traits;
-
-      if (i.value_null)
-        v = ptr_traits::pointer_type ();
-      else
-      {
-        obj_traits::id_type ptr_id;
-        mysql::value_traits<
-            obj_traits::id_type,
-            mysql::id_string >::set_value (
-          ptr_id,
-          i.value_value,
-          i.value_size,
-          i.value_null);
-
-        // If a compiler error points to the line below, then
-        // it most likely means that a pointer used in a member
-        // cannot be initialized from an object pointer.
-        //
-        v = ptr_traits::pointer_type (
-          static_cast<mysql::database*> (db)->load<
-            obj_traits::object_type > (ptr_id));
-      }
-    }
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  insert (index_type i, const value_type& v, void* d)
-  {
-    using namespace mysql;
-
-    statements_type& sts (*static_cast< statements_type* > (d));
-    data_image_type& di (sts.data_image ());
-
-    init (di, &i, v);
-
-    if (sts.data_binding_test_version ())
-    {
-      const binding& id (sts.id_binding ());
-      bind (sts.data_bind (), id.bind, id.count, di);
-      sts.data_binding_update_version ();
-    }
-
-    if (!sts.insert_statement ().execute ())
-      throw object_already_persistent ();
-  }
-
-  bool access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  select (index_type& i, value_type& v, void* d)
-  {
-    using namespace mysql;
-    using mysql::select_statement;
-
-    statements_type& sts (*static_cast< statements_type* > (d));
-    data_image_type& di (sts.data_image ());
-
-    init (i, v, di, &sts.connection ().database ());
-
-    if (sts.data_binding_test_version ())
-    {
-      const binding& id (sts.id_binding ());
-      bind (sts.data_bind (), id.bind, id.count, di);
-      sts.data_binding_update_version ();
-    }
-
-    select_statement& st (sts.select_statement ());
-    select_statement::result r (st.fetch ());
-
-    if (r == select_statement::truncated)
-    {
-      grow (di, sts.select_image_truncated ());
-
-      if (sts.data_binding_test_version ())
-      {
-        bind (sts.data_bind (), 0, sts.id_binding ().count, di);
-        sts.data_binding_update_version ();
-        st.refetch ();
-      }
-    }
-
-    return r != select_statement::no_data;
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  delete_ (void* d)
-  {
-    using namespace mysql;
-
-    statements_type& sts (*static_cast< statements_type* > (d));
-    sts.delete_statement ().execute ();
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  persist (const container_type& c,
-           statements_type& sts)
-  {
-    using namespace mysql;
-
-    functions_type& fs (sts.functions ());
-    fs.ordered_ = true;
-    container_traits_type::persist (c, fs);
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  load (container_type& c,
-        statements_type& sts)
-  {
-    using namespace mysql;
-    using mysql::select_statement;
-
-    const binding& id (sts.id_binding ());
-
-    if (sts.data_binding_test_version ())
-    {
-      bind (sts.data_bind (), id.bind, id.count, sts.data_image ());
-      sts.data_binding_update_version ();
-    }
-
-    select_statement& st (sts.select_statement ());
-    st.execute ();
-    auto_result ar (st);
-    st.cache ();
-    select_statement::result r (st.fetch ());
-
-    if (r == select_statement::truncated)
-    {
-      data_image_type& di (sts.data_image ());
-      grow (di, sts.select_image_truncated ());
-
-      if (sts.data_binding_test_version ())
-      {
-        bind (sts.data_bind (), 0, id.count, di);
-        sts.data_binding_update_version ();
-        st.refetch ();
-      }
-    }
-
-    bool more (r != select_statement::no_data);
-
-    functions_type& fs (sts.functions ());
-    fs.ordered_ = true;
-    container_traits_type::load (c, more, fs);
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  update (const container_type& c,
-          statements_type& sts)
-  {
-    using namespace mysql;
-
-    functions_type& fs (sts.functions ());
-    fs.ordered_ = true;
-    container_traits_type::update (c, fs);
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::categories_traits::
-  erase (statements_type& sts)
-  {
-    using namespace mysql;
-
-    functions_type& fs (sts.functions ());
-    fs.ordered_ = true;
-    container_traits_type::erase (fs);
-  }
 
   access::object_traits_impl< ::Experiencia, id_mysql >::id_type
   access::object_traits_impl< ::Experiencia, id_mysql >::
@@ -462,13 +130,21 @@ namespace odb
     //
     t[4UL] = 0;
 
+    // preu
+    //
+    t[5UL] = 0;
+
     // dataAlta
     //
-    if (t[5UL])
+    if (t[6UL])
     {
       i.dataAlta_value.capacity (i.dataAlta_size);
       grew = true;
     }
+
+    // numReserves
+    //
+    t[7UL] = 0;
 
     return grew;
   }
@@ -538,6 +214,13 @@ namespace odb
     b[n].is_null = &i.maximPlaces_null;
     n++;
 
+    // preu
+    //
+    b[n].buffer_type = MYSQL_TYPE_FLOAT;
+    b[n].buffer = &i.preu_value;
+    b[n].is_null = &i.preu_null;
+    n++;
+
     // dataAlta
     //
     b[n].buffer_type = MYSQL_TYPE_STRING;
@@ -546,6 +229,14 @@ namespace odb
       i.dataAlta_value.capacity ());
     b[n].length = &i.dataAlta_size;
     b[n].is_null = &i.dataAlta_null;
+    n++;
+
+    // numReserves
+    //
+    b[n].buffer_type = MYSQL_TYPE_LONG;
+    b[n].is_unsigned = 0;
+    b[n].buffer = &i.numReserves_value;
+    b[n].is_null = &i.numReserves_null;
     n++;
   }
 
@@ -673,6 +364,20 @@ namespace odb
       i.maximPlaces_null = is_null;
     }
 
+    // preu
+    //
+    {
+      float const& v =
+        o.preu;
+
+      bool is_null (false);
+      mysql::value_traits<
+          float,
+          mysql::id_float >::set_image (
+        i.preu_value, is_null, v);
+      i.preu_null = is_null;
+    }
+
     // dataAlta
     //
     {
@@ -692,6 +397,20 @@ namespace odb
       i.dataAlta_null = is_null;
       i.dataAlta_size = static_cast<unsigned long> (size);
       grew = grew || (cap != i.dataAlta_value.capacity ());
+    }
+
+    // numReserves
+    //
+    {
+      int const& v =
+        o.numReserves;
+
+      bool is_null (false);
+      mysql::value_traits<
+          int,
+          mysql::id_long >::set_image (
+        i.numReserves_value, is_null, v);
+      i.numReserves_null = is_null;
     }
 
     return grew;
@@ -765,6 +484,20 @@ namespace odb
         i.maximPlaces_null);
     }
 
+    // preu
+    //
+    {
+      float& v =
+        o.preu;
+
+      mysql::value_traits<
+          float,
+          mysql::id_float >::set_value (
+        v,
+        i.preu_value,
+        i.preu_null);
+    }
+
     // dataAlta
     //
     {
@@ -778,6 +511,20 @@ namespace odb
         i.dataAlta_value,
         i.dataAlta_size,
         i.dataAlta_null);
+    }
+
+    // numReserves
+    //
+    {
+      int& v =
+        o.numReserves;
+
+      mysql::value_traits<
+          int,
+          mysql::id_long >::set_value (
+        v,
+        i.numReserves_value,
+        i.numReserves_null);
     }
   }
 
@@ -821,9 +568,11 @@ namespace odb
   "`descripcio`, "
   "`ciutat`, "
   "`maximPlaces`, "
-  "`dataAlta`) "
+  "`preu`, "
+  "`dataAlta`, "
+  "`numReserves`) "
   "VALUES "
-  "(?, ?, ?, ?, ?, ?)";
+  "(?, ?, ?, ?, ?, ?, ?, ?)";
 
   const char access::object_traits_impl< ::Experiencia, id_mysql >::find_statement[] =
   "SELECT "
@@ -832,7 +581,9 @@ namespace odb
   "`Experiencia`.`descripcio`, "
   "`Experiencia`.`ciutat`, "
   "`Experiencia`.`maximPlaces`, "
-  "`Experiencia`.`dataAlta` "
+  "`Experiencia`.`preu`, "
+  "`Experiencia`.`dataAlta`, "
+  "`Experiencia`.`numReserves` "
   "FROM `Experiencia` "
   "WHERE `Experiencia`.`nom`=?";
 
@@ -849,7 +600,9 @@ namespace odb
   "`descripcio`=?, "
   "`ciutat`=?, "
   "`maximPlaces`=?, "
-  "`dataAlta`=? "
+  "`preu`=?, "
+  "`dataAlta`=?, "
+  "`numReserves`=? "
   "WHERE `nom`=?";
 
   const char access::object_traits_impl< ::Experiencia, id_mysql >::erase_statement[] =
@@ -863,7 +616,9 @@ namespace odb
   "`Experiencia`.`descripcio`, "
   "`Experiencia`.`ciutat`, "
   "`Experiencia`.`maximPlaces`, "
-  "`Experiencia`.`dataAlta` "
+  "`Experiencia`.`preu`, "
+  "`Experiencia`.`dataAlta`, "
+  "`Experiencia`.`numReserves` "
   "FROM `Experiencia`";
 
   const char access::object_traits_impl< ::Experiencia, id_mysql >::erase_query_statement[] =
@@ -923,19 +678,6 @@ namespace odb
       bind (idb.bind, i);
       sts.id_image_version (i.version);
       idb.version++;
-    }
-
-    extra_statement_cache_type& esc (sts.extra_statement_cache ());
-
-    // categories
-    //
-    {
-      ::std::vector< ::std::shared_ptr< ::Categoria > > const& v =
-        obj.categories;
-
-      categories_traits::persist (
-        v,
-        esc.categories);
     }
   }
 
@@ -1004,19 +746,6 @@ namespace odb
     update_statement& st (sts.update_statement ());
     if (st.execute () == 0)
       throw object_not_persistent ();
-
-    extra_statement_cache_type& esc (sts.extra_statement_cache ());
-
-    // categories
-    //
-    {
-      ::std::vector< ::std::shared_ptr< ::Categoria > > const& v =
-        obj.categories;
-
-      categories_traits::update (
-        v,
-        esc.categories);
-    }
   }
 
   void access::object_traits_impl< ::Experiencia, id_mysql >::
@@ -1042,15 +771,6 @@ namespace odb
 
       pi.dispatch (info_type::call_erase, db, 0, &id);
       return;
-    }
-
-    extra_statement_cache_type& esc (sts.extra_statement_cache ());
-
-    // categories
-    //
-    {
-      categories_traits::erase (
-        esc.categories);
     }
 
     if (sts.erase_statement ().execute () != 1)
@@ -1223,27 +943,6 @@ namespace odb
     }
 
     return r != select_statement::no_data;
-  }
-
-  void access::object_traits_impl< ::Experiencia, id_mysql >::
-  load_ (statements_type& sts,
-         object_type& obj,
-         bool reload)
-  {
-    ODB_POTENTIALLY_UNUSED (reload);
-
-    extra_statement_cache_type& esc (sts.extra_statement_cache ());
-
-    // categories
-    //
-    {
-      ::std::vector< ::std::shared_ptr< ::Categoria > >& v =
-        obj.categories;
-
-      categories_traits::load (
-        v,
-        esc.categories);
-    }
   }
 
   void access::object_traits_impl< ::Experiencia, id_mysql >::

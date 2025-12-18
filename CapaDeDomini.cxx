@@ -90,17 +90,26 @@ void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
 
 std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     auto totes = CapaDeDades::getInstance().totesExperiencies();
+
+    // Ordenar por dataAlta
     std::sort(totes.begin(), totes.end(), [](const std::shared_ptr<Experiencia>& a, const std::shared_ptr<Experiencia>& b) {
         return a->getDataAlta() > b->getDataAlta();
         });
+
     std::vector<DTOExperiencia> res;
     int limit = std::min((int)totes.size(), 10);
+
     for (int i = 0; i < limit; ++i) {
         auto e = totes[i];
-        std::vector<std::string> cats;
-        for (const auto& c : e->getCategories()) cats.push_back(c->getNom());
-        res.emplace_back(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
-            e->getMaximPlaces(), e->obteDadesEspecifiques(), cats);
+        res.emplace_back(
+            e->obteTipus(),
+            e->getNom(),
+            e->getDescripcio(),
+            e->getCiutat(),
+            e->getMaximPlaces(),
+            e->getPreu(), // AHORA SACAMOS EL PRECIO DE LA BASE
+            e->obteDadesEspecifiques()
+        );
     }
     return res;
 }

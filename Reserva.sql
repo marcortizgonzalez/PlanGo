@@ -6,9 +6,9 @@ DROP TABLE IF EXISTS `Reserva`;
 
 CREATE TABLE `Reserva` (
   `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `data` TEXT NOT NULL,
   `numPlaces` INT NOT NULL,
   `preuPagat` FLOAT NOT NULL,
-  `dataReserva` TEXT NOT NULL,
   `usuari` VARCHAR(128) NOT NULL,
   `experiencia` VARCHAR(128) NOT NULL)
  ENGINE=InnoDB;
