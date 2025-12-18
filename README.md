@@ -10,7 +10,6 @@ Para ejecutar la aplicación, es necesario configurar la conexión a la base de 
 
 1. Crear la base de datos `inep08` (o el nombre que uses).
 2. Ejecutar los scripts SQL generados por ODB en el siguiente orden estricto:
-   - `Categoria.sql`
    - `Experiencia.sql`
    - `Escapada.sql`
    - `Activitat.sql`
