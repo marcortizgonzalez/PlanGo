@@ -1,5 +1,6 @@
 #include "CapaDeDomini.hxx"
 #include "CapaDeDades.hxx"
+#include "PlanGo.hxx" // Necesario para el descuento
 #include <algorithm>
 #include <stdexcept>
 
@@ -17,11 +18,9 @@ void CapaDeDomini::iniciarSessio(std::string username, std::string contrasenya) 
 
 void CapaDeDomini::registrarUsuari(std::string nom, std::string sobrenom, std::string correu,
     std::string pass, int edat) {
-    // Validar ID único
     if (CapaDeDades::getInstance().obtenirUsuari(sobrenom) != nullptr) {
         throw std::runtime_error("El sobrenom '" + sobrenom + "' ja existeix.");
     }
-    // Validar Correo único
     if (CapaDeDades::getInstance().obtenirUsuariPerCorreu(correu) != nullptr) {
         throw std::runtime_error("El correu '" + correu + "' ja esta registrat.");
     }
@@ -33,11 +32,8 @@ void CapaDeDomini::registrarUsuari(std::string nom, std::string sobrenom, std::s
 DTOUsuari CapaDeDomini::consultarUsuari() {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
 
-    // REQUISITO: "Anar a la base de dades a buscar la informació" para confirmar cambios
     auto usuariRefrescat = CapaDeDades::getInstance().obtenirUsuari(usuariLoggejat->getSobrenom());
-    if (usuariRefrescat) {
-        usuariLoggejat = usuariRefrescat; // Actualizamos memoria con lo real de BD
-    }
+    if (usuariRefrescat) usuariLoggejat = usuariRefrescat;
 
     auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
 
@@ -53,27 +49,16 @@ DTOUsuari CapaDeDomini::consultarUsuari() {
 void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouCorreu, int nouEdat) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
 
-    // 1. Validar Correo (Escenario Alternativo)
     if (!nouCorreu.empty() && nouCorreu != usuariLoggejat->getCorreuElectronic()) {
         auto existe = CapaDeDades::getInstance().obtenirUsuariPerCorreu(nouCorreu);
-        if (existe) {
-            throw std::runtime_error("El correu electronic ja existeix.");
-        }
+        if (existe) throw std::runtime_error("El correu electronic ja existeix.");
     }
+    if (nouEdat != -1 && nouEdat < 18) throw std::runtime_error("L'usuari es menor d'edat.");
 
-    // 2. Validar Edat (Escenario Alternativo)
-    if (nouEdat != -1) { // Si se ha introducido un valor
-        if (nouEdat < 18) {
-            throw std::runtime_error("L'usuari es menor d'edat.");
-        }
-    }
-
-    // Aplicar cambios si pasan las validaciones
     if (!nouNom.empty()) usuariLoggejat->setNom(nouNom);
     if (!nouCorreu.empty()) usuariLoggejat->setCorreuElectronic(nouCorreu);
     if (nouEdat != -1) usuariLoggejat->setEdat(nouEdat);
 
-    // Guardar en BD
     CapaDeDades::getInstance().modificaUsuari(usuariLoggejat);
 }
 
@@ -90,26 +75,70 @@ void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
 
 std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     auto totes = CapaDeDades::getInstance().totesExperiencies();
-
-    // Ordenar por dataAlta
     std::sort(totes.begin(), totes.end(), [](const std::shared_ptr<Experiencia>& a, const std::shared_ptr<Experiencia>& b) {
         return a->getDataAlta() > b->getDataAlta();
         });
 
     std::vector<DTOExperiencia> res;
     int limit = std::min((int)totes.size(), 10);
-
     for (int i = 0; i < limit; ++i) {
         auto e = totes[i];
-        res.emplace_back(
-            e->obteTipus(),
-            e->getNom(),
-            e->getDescripcio(),
-            e->getCiutat(),
-            e->getMaximPlaces(),
-            e->getPreu(), // AHORA SACAMOS EL PRECIO DE LA BASE
-            e->obteDadesEspecifiques()
-        );
+        res.emplace_back(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
+            e->getMaximPlaces(), e->getPreu(), e->obteDadesEspecifiques());
     }
     return res;
+}
+
+// --- BLOQUE B: IMPLEMENTACIÓN RESERVAS ---
+
+void CapaDeDomini::_processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces, std::string data) {
+    // 1. Validar plazas
+    if (exp->getNumReserves() + numPlaces > exp->getMaximPlaces()) {
+        int disponibles = exp->getMaximPlaces() - exp->getNumReserves();
+        throw std::runtime_error("No hi ha places suficients. Disponibles: " + std::to_string(disponibles));
+    }
+
+    // 2. Calcular precio
+    float preuBase = exp->getPreu() * numPlaces;
+    float descompte = PlanGo::getInstance().getDescompte();
+    float preuFinal = preuBase * ((100.0f - descompte) / 100.0f);
+
+    // 3. Crear y guardar
+    auto novaReserva = std::make_shared<Reserva>(numPlaces, preuFinal, data, usuariLoggejat, exp);
+    exp->setNumReserves(exp->getNumReserves() + numPlaces);
+
+    CapaDeDades::getInstance().insertaReserva(novaReserva);
+    CapaDeDades::getInstance().actualitzaExperiencia(exp);
+}
+
+void CapaDeDomini::reservarEscapada(std::string nomEscapada, int numPersones, std::string data) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+    auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomEscapada);
+    if (!exp) throw std::runtime_error("L'escapada no existeix.");
+    if (exp->obteTipus() == "ACTIVITAT") throw std::runtime_error("No es una escapada.");
+
+    _processarReserva(exp, numPersones, data);
+}
+
+void CapaDeDomini::reservarActivitat(std::string nomActivitat, int numPersones, std::string data) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+    auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomActivitat);
+    if (!exp) throw std::runtime_error("L'activitat no existeix.");
+    if (exp->obteTipus() != "ACTIVITAT") throw std::runtime_error("No es una activitat.");
+
+    _processarReserva(exp, numPersones, data);
+}
+
+std::vector<DTOReserva> CapaDeDomini::consultarReserves() {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+    auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
+
+    std::vector<DTOReserva> result;
+    for (const auto& r : reserves) {
+        auto e = r->getExperiencia();
+        DTOExperiencia dtoExp(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
+            e->getMaximPlaces(), e->getPreu(), e->obteDadesEspecifiques());
+        result.emplace_back(r->getData(), r->getNumPlaces(), r->getPreuPagat(), dtoExp);
+    }
+    return result;
 }

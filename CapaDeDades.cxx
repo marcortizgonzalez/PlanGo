@@ -120,3 +120,38 @@ void CapaDeDades::esborrarUsuari(std::shared_ptr<Usuari> u) {
     }
     catch (...) {}
 }
+
+// --- BLOQUE B ---
+
+std::shared_ptr<Experiencia> CapaDeDades::obtenirExperiencia(std::string nom) {
+    std::shared_ptr<Experiencia> e;
+    try {
+        odb::transaction t(db->begin());
+        e = db->find<Experiencia>(nom);
+        t.commit();
+    }
+    catch (...) {}
+    return e;
+}
+
+void CapaDeDades::actualitzaExperiencia(std::shared_ptr<Experiencia> e) {
+    try {
+        odb::transaction t(db->begin());
+        db->update(e);
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        throw std::runtime_error("Error SQL Update: " + std::string(e.what()));
+    }
+}
+
+void CapaDeDades::insertaReserva(std::shared_ptr<Reserva> r) {
+    try {
+        odb::transaction t(db->begin());
+        db->persist(r);
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        throw std::runtime_error("Error SQL Insert Reserva: " + std::string(e.what()));
+    }
+}

@@ -275,9 +275,81 @@ void CapaDePresentacio::esborrarUsuari() {
 }
 
 // Stubs del resto
-void CapaDePresentacio::reservarEscapada() { cout << "En construccio" << endl; pausa(); }
-void CapaDePresentacio::reservarActivitat() { cout << "En construccio" << endl; pausa(); }
-void CapaDePresentacio::consultarReserves() { cout << "En construccio" << endl; pausa(); }
+void CapaDePresentacio::reservarEscapada() {
+    try {
+        cout << "\n--- RESERVAR ESCAPADA ---" << endl;
+        string nom, data;
+        int places;
+
+        cout << "Nom de l'escapada: ";
+        getline(cin, nom); // getline permite espacios (ej: "Hotel W")
+
+        cout << "Nombre de places: "; cin >> places;
+        cout << "Data (AAAA-MM-DD): "; cin >> data;
+        cin.ignore(); // Limpiar buffer tras leer string simple
+
+        CapaDeDomini::getInstance().reservarEscapada(nom, places, data);
+
+        cout << "Reserva realitzada correctament!" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+    pausa();
+}
+
+void CapaDePresentacio::reservarActivitat() {
+    try {
+        cout << "\n--- RESERVAR ACTIVITAT ---" << endl;
+        string nom, data;
+        int persones;
+
+        cout << "Nom de l'activitat: ";
+        getline(cin, nom);
+
+        cout << "Nombre de persones: "; cin >> persones;
+        cout << "Data (AAAA-MM-DD): "; cin >> data;
+        cin.ignore();
+
+        CapaDeDomini::getInstance().reservarActivitat(nom, persones, data);
+
+        cout << "Reserva realitzada correctament!" << endl;
+    }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+    pausa();
+}
+
+void CapaDePresentacio::consultarReserves() {
+    try {
+        auto llista = CapaDeDomini::getInstance().consultarReserves();
+
+        cout << "\n--- LES MEVES RESERVES ---" << endl;
+        if (llista.empty()) {
+            cout << "No tens cap reserva." << endl;
+        }
+        else {
+            for (const auto& r : llista) {
+                // Accedemos al DTO Experiencia anidado
+                const auto& exp = r.obteExperiencia();
+
+                cout << "--------------------------------" << endl;
+                cout << "Experiencia: " << exp.obteNom() << " (" << exp.obteCiutat() << ")" << endl;
+                cout << "Data Reserva: " << r.obteData() << endl;
+                cout << "Places: " << r.obteNumPlaces() << endl;
+                cout << "Preu Pagat: " << r.obtePreuPagat() << " eur" << endl;
+                cout << "Detalls: " << exp.obteDetalls() << endl;
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+    pausa();
+}
+
+
 void CapaDePresentacio::consultarExperiencies() { cout << "En construccio" << endl; pausa(); }
 void CapaDePresentacio::consultaNovetats() {
     try {

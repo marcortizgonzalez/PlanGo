@@ -19,6 +19,9 @@ public:
 
     // Reservas
     std::vector<std::shared_ptr<Reserva>> obtenirReservesUsuari(std::shared_ptr<Usuari> u);
+    std::shared_ptr<Experiencia> obtenirExperiencia(std::string nom);
+    void actualitzaExperiencia(std::shared_ptr<Experiencia> e);
+    void insertaReserva(std::shared_ptr<Reserva> r);
 
     // Modificación
     void insertaUsuari(std::shared_ptr<Usuari> u);
