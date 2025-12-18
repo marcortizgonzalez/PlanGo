@@ -25,6 +25,54 @@ CapaDeDades::CapaDeDades() {
     }
 }
 
+// --- CONSULTAS BLOQUE C (CORREGIDAS) ---
+
+std::vector<std::shared_ptr<Experiencia>> CapaDeDades::cercarExperiencies(std::string ciutat, float preuMax) {
+    std::vector<std::shared_ptr<Experiencia>> result_list;
+    try {
+        odb::transaction t(db->begin());
+        typedef odb::query<Experiencia> query;
+        typedef odb::result<Experiencia> result;
+
+        // CORRECCIÓN: Paréntesis envolviendo la lógica antes de sumar el string "ORDER BY"
+        result r(db->query<Experiencia>(
+            (query::ciutat == ciutat && query::preu <= preuMax) + "ORDER BY" + query::preu
+        ));
+
+        for (result::iterator i(r.begin()); i != r.end(); ++i) {
+            result_list.push_back(i.load());
+        }
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        std::cerr << "Error cercant experiencies: " << e.what() << std::endl;
+    }
+    return result_list;
+}
+
+std::vector<std::shared_ptr<Experiencia>> CapaDeDades::experienciesMesReservades() {
+    std::vector<std::shared_ptr<Experiencia>> result_list;
+    try {
+        odb::transaction t(db->begin());
+        typedef odb::query<Experiencia> query;
+        typedef odb::result<Experiencia> result;
+
+        // CORRECCIÓN: Aseguramos que el string sea std::string o usamos sintaxis ODB pura
+        result r(db->query<Experiencia>("ORDER BY" + query::numReserves + "DESC"));
+
+        for (result::iterator i(r.begin()); i != r.end(); ++i) {
+            result_list.push_back(i.load());
+        }
+        t.commit();
+    }
+    catch (const odb::exception& e) {
+        std::cerr << "Error ranking experiencies: " << e.what() << std::endl;
+    }
+    return result_list;
+}
+
+// --- RESTO DE MÉTODOS (Bloques A y B) ---
+
 std::vector<std::shared_ptr<Experiencia>> CapaDeDades::totesExperiencies() {
     std::vector<std::shared_ptr<Experiencia>> result_list;
     try {
@@ -51,13 +99,11 @@ std::shared_ptr<Usuari> CapaDeDades::obtenirUsuari(std::string sobrenom) {
     return u;
 }
 
-// Buscar por correo electrónico para validaciones
 std::shared_ptr<Usuari> CapaDeDades::obtenirUsuariPerCorreu(std::string correu) {
     std::shared_ptr<Usuari> u;
     try {
         odb::transaction t(db->begin());
         typedef odb::query<Usuari> query;
-        // Consulta ODB buscando por el campo 'correuElectronic'
         u = db->query_one<Usuari>(query::correuElectronic == correu);
         t.commit();
     }
@@ -72,13 +118,22 @@ std::vector<std::shared_ptr<Reserva>> CapaDeDades::obtenirReservesUsuari(std::sh
         typedef odb::query<Reserva> query;
         typedef odb::result<Reserva> result;
         result r(db->query<Reserva>(query::usuari == u->getSobrenom()));
-        for (auto& res : r) {
-            llista.push_back(std::make_shared<Reserva>(res));
-        }
+        for (auto& res : r) llista.push_back(std::make_shared<Reserva>(res));
         t.commit();
     }
     catch (...) {}
     return llista;
+}
+
+std::shared_ptr<Experiencia> CapaDeDades::obtenirExperiencia(std::string nom) {
+    std::shared_ptr<Experiencia> e;
+    try {
+        odb::transaction t(db->begin());
+        e = db->find<Experiencia>(nom);
+        t.commit();
+    }
+    catch (...) {}
+    return e;
 }
 
 void CapaDeDades::insertaUsuari(std::shared_ptr<Usuari> u) {
@@ -87,9 +142,7 @@ void CapaDeDades::insertaUsuari(std::shared_ptr<Usuari> u) {
         db->persist(u);
         t.commit();
     }
-    catch (const odb::exception& e) {
-        throw std::runtime_error("Error SQL Insert: " + std::string(e.what()));
-    }
+    catch (const odb::exception& e) { throw std::runtime_error(e.what()); }
 }
 
 void CapaDeDades::modificaUsuari(std::shared_ptr<Usuari> u) {
@@ -98,9 +151,25 @@ void CapaDeDades::modificaUsuari(std::shared_ptr<Usuari> u) {
         db->update(u);
         t.commit();
     }
-    catch (const odb::exception& e) {
-        throw std::runtime_error("Error SQL Update: " + std::string(e.what()));
+    catch (const odb::exception& e) { throw std::runtime_error(e.what()); }
+}
+
+void CapaDeDades::actualitzaExperiencia(std::shared_ptr<Experiencia> e) {
+    try {
+        odb::transaction t(db->begin());
+        db->update(e);
+        t.commit();
     }
+    catch (const odb::exception& e) { throw std::runtime_error(e.what()); }
+}
+
+void CapaDeDades::insertaReserva(std::shared_ptr<Reserva> r) {
+    try {
+        odb::transaction t(db->begin());
+        db->persist(r);
+        t.commit();
+    }
+    catch (const odb::exception& e) { throw std::runtime_error(e.what()); }
 }
 
 void CapaDeDades::esborrarReserva(std::shared_ptr<Reserva> r) {
@@ -119,39 +188,4 @@ void CapaDeDades::esborrarUsuari(std::shared_ptr<Usuari> u) {
         t.commit();
     }
     catch (...) {}
-}
-
-// --- BLOQUE B ---
-
-std::shared_ptr<Experiencia> CapaDeDades::obtenirExperiencia(std::string nom) {
-    std::shared_ptr<Experiencia> e;
-    try {
-        odb::transaction t(db->begin());
-        e = db->find<Experiencia>(nom);
-        t.commit();
-    }
-    catch (...) {}
-    return e;
-}
-
-void CapaDeDades::actualitzaExperiencia(std::shared_ptr<Experiencia> e) {
-    try {
-        odb::transaction t(db->begin());
-        db->update(e);
-        t.commit();
-    }
-    catch (const odb::exception& e) {
-        throw std::runtime_error("Error SQL Update: " + std::string(e.what()));
-    }
-}
-
-void CapaDeDades::insertaReserva(std::shared_ptr<Reserva> r) {
-    try {
-        odb::transaction t(db->begin());
-        db->persist(r);
-        t.commit();
-    }
-    catch (const odb::exception& e) {
-        throw std::runtime_error("Error SQL Insert Reserva: " + std::string(e.what()));
-    }
 }

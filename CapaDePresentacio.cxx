@@ -350,19 +350,76 @@ void CapaDePresentacio::consultarReserves() {
 }
 
 
-void CapaDePresentacio::consultarExperiencies() { cout << "En construccio" << endl; pausa(); }
+// --- BLOQUE C: IMPLEMENTACIÓN MENÚS ---
+
+void CapaDePresentacio::consultarExperiencies() {
+    try {
+        cout << "\n--- CERCAR EXPERIENCIES ---" << endl;
+        string ciutat;
+        float preu;
+
+        cout << "Ciutat: ";
+        getline(cin, ciutat);
+
+        cout << "Preu maxim: ";
+        cin >> preu;
+        cin.ignore();
+
+        auto llista = CapaDeDomini::getInstance().consultarExperiencies(ciutat, preu);
+
+        cout << "\nResultats de la cerca:" << endl;
+        if (llista.empty()) {
+            cout << "No s'han trobat experiencies amb aquests criteris." << endl;
+        }
+        else {
+            for (const auto& dto : llista) {
+                cout << "- [" << dto.obteTipus() << "] " << dto.obteNom()
+                    << " | " << dto.obtePreu() << " eur" << endl;
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+    pausa();
+}
+
 void CapaDePresentacio::consultaNovetats() {
     try {
         auto novetats = CapaDeDomini::getInstance().consultarNovetats();
-        cout << "\n** Consultar novetats **" << endl;
+        cout << "\n--- NOVETATS (Ultimes altes) ---" << endl;
         for (const auto& dto : novetats) {
-            cout << "[" << dto.obteTipus() << "] " << dto.obteNom() << " (" << dto.obteCiutat() << ")" << endl;
-            // Mostramos precio
+            cout << "[" << dto.obteTipus() << "] " << dto.obteNom()
+                << " (" << dto.obteCiutat() << ")" << endl;
             cout << "   Preu: " << dto.obtePreu() << " eur" << endl;
             cout << "   " << dto.obteDetalls() << endl;
         }
     }
-    catch (exception& e) { cout << "Error: " << e.what() << endl; }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
     pausa();
 }
-void CapaDePresentacio::consultarMesReservades() { cout << "En construccio" << endl; pausa(); }
+
+void CapaDePresentacio::consultarMesReservades() {
+    try {
+        auto llista = CapaDeDomini::getInstance().consultarMesReservades();
+        cout << "\n--- EXPERIENCIES MES RESERVADES (Top 10) ---" << endl;
+        if (llista.empty()) {
+            cout << "Encara no hi ha reserves registrades." << endl;
+        }
+        else {
+            int ranking = 1;
+            for (const auto& dto : llista) {
+                cout << "#" << ranking++ << " " << dto.obteNom()
+                    << " (" << dto.obteCiutat() << ")" << endl;
+                cout << "   Tipus: " << dto.obteTipus()
+                    << " | Preu: " << dto.obtePreu() << " eur" << endl;
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+    pausa();
+}
