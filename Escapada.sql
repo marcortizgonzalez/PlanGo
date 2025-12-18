@@ -7,8 +7,7 @@ DROP TABLE IF EXISTS `Escapada`;
 CREATE TABLE `Escapada` (
   `nom` VARCHAR(128) NOT NULL PRIMARY KEY,
   `hotel` TEXT NOT NULL,
-  `numNits` INT NOT NULL,
-  `preu` FLOAT NOT NULL)
+  `numNits` INT NOT NULL)
  ENGINE=InnoDB;
 
 ALTER TABLE `Escapada`

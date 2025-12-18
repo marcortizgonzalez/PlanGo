@@ -204,13 +204,11 @@ void CapaDePresentacio::consultarUsuari() {
     pausa();
 }
 
-// CORRECCIÓN ERROR 3: Implementación estricta del caso de uso
 void CapaDePresentacio::modificarUsuari() {
     try {
         // 1. Mostrar información actual
         DTOUsuari actual = CapaDeDomini::getInstance().consultarUsuari();
         cout << "\n--- MODIFICAR USUARI (" << actual.obteSobrenom() << ") ---" << endl;
-        // Se muestra todo menos contraseña (ya lo hace consultarUsuari por DTO)
         cout << "Dades actuals:" << endl;
         cout << "Nom: " << actual.obteNom() << endl;
         cout << "Correu: " << actual.obteCorreu() << endl;
@@ -244,14 +242,16 @@ void CapaDePresentacio::modificarUsuari() {
         CapaDeDomini::getInstance().modificarUsuari(nouNom, nouCorreu, novaEdat);
 
         // 4. Mostrar información actualizada DESDE BASE DE DATOS
-        // La llamada a consultarUsuari dentro de CapaDeDomini ya fuerza la recarga (reload)
         cout << "\nModificacio realitzada amb exit. Dades actualitzades (BD):" << endl;
-        consultarUsuari(); // Reutilizamos la función de visualización
+        consultarUsuari(); // Esta función ya tiene su propio pausa()
+
+        return; // <--- CORRECCIÓN: Salimos aquí para evitar el segundo pausa()
 
     }
     catch (exception& e) {
         cout << "Error: " << e.what() << endl;
     }
+    // Este pausa solo se ejecutará si ha habido un error (saltando al catch)
     pausa();
 }
 
@@ -285,6 +285,9 @@ void CapaDePresentacio::consultaNovetats() {
         cout << "\n** Consultar novetats **" << endl;
         for (const auto& dto : novetats) {
             cout << "[" << dto.obteTipus() << "] " << dto.obteNom() << " (" << dto.obteCiutat() << ")" << endl;
+            // Mostramos precio
+            cout << "   Preu: " << dto.obtePreu() << " eur" << endl;
+            cout << "   " << dto.obteDetalls() << endl;
         }
     }
     catch (exception& e) { cout << "Error: " << e.what() << endl; }

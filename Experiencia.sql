@@ -2,8 +2,6 @@
  * compiler for C++.
  */
 
-DROP TABLE IF EXISTS `Experiencia_categories`;
-
 DROP TABLE IF EXISTS `Experiencia`;
 
 CREATE TABLE `Experiencia` (
@@ -12,27 +10,8 @@ CREATE TABLE `Experiencia` (
   `descripcio` TEXT NOT NULL,
   `ciutat` TEXT NOT NULL,
   `maximPlaces` INT NOT NULL,
-  `dataAlta` TEXT NOT NULL)
+  `preu` FLOAT NOT NULL,
+  `dataAlta` TEXT NOT NULL,
+  `numReserves` INT NOT NULL)
  ENGINE=InnoDB;
-
-CREATE TABLE `Experiencia_categories` (
-  `object_id` VARCHAR(128) NOT NULL,
-  `index` BIGINT UNSIGNED NOT NULL,
-  `value` VARCHAR(128) NULL,
-  CONSTRAINT `Experiencia_categories_object_id_fk`
-    FOREIGN KEY (`object_id`)
-    REFERENCES `Experiencia` (`nom`)
-    ON DELETE CASCADE)
- ENGINE=InnoDB;
-
-CREATE INDEX `object_id_i`
-  ON `Experiencia_categories` (`object_id`);
-
-CREATE INDEX `index_i`
-  ON `Experiencia_categories` (`index`);
-
-ALTER TABLE `Experiencia_categories`
-  ADD CONSTRAINT `Experiencia_categories_value_fk`
-    FOREIGN KEY (`value`)
-    REFERENCES `Categoria` (`nom`);
 

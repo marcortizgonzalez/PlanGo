@@ -57,7 +57,7 @@ namespace odb
     //
     if (--d != 0)
     {
-      if (base_traits::grow (*i.base, t + 3UL))
+      if (base_traits::grow (*i.base, t + 2UL))
         i.base->version++;
     }
 
@@ -72,10 +72,6 @@ namespace odb
     // numNits
     //
     t[1UL] = 0;
-
-    // preu
-    //
-    t[2UL] = 0;
 
     return grew;
   }
@@ -118,13 +114,6 @@ namespace odb
     b[n].is_unsigned = 0;
     b[n].buffer = &i.numNits_value;
     b[n].is_null = &i.numNits_null;
-    n++;
-
-    // preu
-    //
-    b[n].buffer_type = MYSQL_TYPE_FLOAT;
-    b[n].buffer = &i.preu_value;
-    b[n].is_null = &i.preu_null;
     n++;
 
     // nom
@@ -190,20 +179,6 @@ namespace odb
       i.numNits_null = is_null;
     }
 
-    // preu
-    //
-    {
-      float const& v =
-        o.preu;
-
-      bool is_null (false);
-      mysql::value_traits<
-          float,
-          mysql::id_float >::set_image (
-        i.preu_value, is_null, v);
-      i.preu_null = is_null;
-    }
-
     return grew;
   }
 
@@ -250,20 +225,6 @@ namespace odb
         i.numNits_value,
         i.numNits_null);
     }
-
-    // preu
-    //
-    {
-      float& v =
-        o.preu;
-
-      mysql::value_traits<
-          float,
-          mysql::id_float >::set_value (
-        v,
-        i.preu_value,
-        i.preu_null);
-    }
   }
 
   const access::object_traits_impl< ::Escapada, id_mysql >::info_type
@@ -283,47 +244,45 @@ namespace odb
   "INSERT INTO `Escapada` "
   "(`nom`, "
   "`hotel`, "
-  "`numNits`, "
-  "`preu`) "
+  "`numNits`) "
   "VALUES "
-  "(?, ?, ?, ?)";
+  "(?, ?, ?)";
 
   const char* const access::object_traits_impl< ::Escapada, id_mysql >::find_statements[] =
   {
     "SELECT "
     "`Escapada`.`hotel`, "
     "`Escapada`.`numNits`, "
-    "`Escapada`.`preu`, "
     "`Experiencia`.`nom`, "
     "`Experiencia`.`typeid`, "
     "`Experiencia`.`descripcio`, "
     "`Experiencia`.`ciutat`, "
     "`Experiencia`.`maximPlaces`, "
-    "`Experiencia`.`dataAlta` "
+    "`Experiencia`.`preu`, "
+    "`Experiencia`.`dataAlta`, "
+    "`Experiencia`.`numReserves` "
     "FROM `Escapada` "
     "LEFT JOIN `Experiencia` ON `Experiencia`.`nom`=`Escapada`.`nom` "
     "WHERE `Escapada`.`nom`=?",
 
     "SELECT "
     "`Escapada`.`hotel`, "
-    "`Escapada`.`numNits`, "
-    "`Escapada`.`preu` "
+    "`Escapada`.`numNits` "
     "FROM `Escapada` "
     "WHERE `Escapada`.`nom`=?"
   };
 
   const std::size_t access::object_traits_impl< ::Escapada, id_mysql >::find_column_counts[] =
   {
-    9UL,
-    3UL
+    10UL,
+    2UL
   };
 
   const char access::object_traits_impl< ::Escapada, id_mysql >::update_statement[] =
   "UPDATE `Escapada` "
   "SET "
   "`hotel`=?, "
-  "`numNits`=?, "
-  "`preu`=? "
+  "`numNits`=? "
   "WHERE `nom`=?";
 
   const char access::object_traits_impl< ::Escapada, id_mysql >::erase_statement[] =
@@ -334,13 +293,14 @@ namespace odb
   "SELECT\n"
   "`Escapada`.`hotel`,\n"
   "`Escapada`.`numNits`,\n"
-  "`Escapada`.`preu`,\n"
   "`Experiencia`.`nom`,\n"
   "`Experiencia`.`typeid`,\n"
   "`Experiencia`.`descripcio`,\n"
   "`Experiencia`.`ciutat`,\n"
   "`Experiencia`.`maximPlaces`,\n"
-  "`Experiencia`.`dataAlta`\n"
+  "`Experiencia`.`preu`,\n"
+  "`Experiencia`.`dataAlta`,\n"
+  "`Experiencia`.`numReserves`\n"
   "FROM `Escapada`\n"
   "LEFT JOIN `Experiencia` ON `Experiencia`.`nom`=`Escapada`.`nom`";
 

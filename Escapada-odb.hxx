@@ -17,7 +17,6 @@
 
 #include "Escapada.hxx"
 
-#include "Categoria-odb.hxx"
 #include "Experiencia-odb.hxx"
 
 #include <memory>
@@ -151,18 +150,6 @@ namespace odb
     numNits_type_;
 
     static const numNits_type_ numNits;
-
-    // preu
-    //
-    typedef
-    mysql::query_column<
-      mysql::value_traits<
-        float,
-        mysql::id_float >::query_type,
-      mysql::id_float >
-    preu_type_;
-
-    static const preu_type_ preu;
   };
 
   template <typename A>
@@ -179,11 +166,6 @@ namespace odb
   const typename query_columns< ::Escapada, id_mysql, A >::numNits_type_
   query_columns< ::Escapada, id_mysql, A >::
   numNits (A::table_name, "`numNits`", 0);
-
-  template <typename A>
-  const typename query_columns< ::Escapada, id_mysql, A >::preu_type_
-  query_columns< ::Escapada, id_mysql, A >::
-  preu (A::table_name, "`preu`", 0);
 
   template <typename A>
   struct pointer_query_columns< ::Escapada, id_mysql, A >:
@@ -224,11 +206,6 @@ namespace odb
       //
       int numNits_value;
       my_bool numNits_null;
-
-      // preu
-      //
-      float preu_value;
-      my_bool preu_null;
 
       std::size_t version;
     };
@@ -282,7 +259,7 @@ namespace odb
 
     typedef mysql::query_base query_base_type;
 
-    static const std::size_t column_count = 4UL;
+    static const std::size_t column_count = 3UL;
     static const std::size_t id_column_count = 1UL;
     static const std::size_t inverse_column_count = 0UL;
     static const std::size_t readonly_column_count = 0UL;

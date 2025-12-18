@@ -17,8 +17,6 @@
 
 #include "Experiencia.hxx"
 
-#include "Categoria-odb.hxx"
-
 #include <memory>
 #include <cstddef>
 #include <string>
@@ -171,6 +169,18 @@ namespace odb
 
     static const maximPlaces_type_ maximPlaces;
 
+    // preu
+    //
+    typedef
+    mysql::query_column<
+      mysql::value_traits<
+        float,
+        mysql::id_float >::query_type,
+      mysql::id_float >
+    preu_type_;
+
+    static const preu_type_ preu;
+
     // dataAlta
     //
     typedef
@@ -182,6 +192,18 @@ namespace odb
     dataAlta_type_;
 
     static const dataAlta_type_ dataAlta;
+
+    // numReserves
+    //
+    typedef
+    mysql::query_column<
+      mysql::value_traits<
+        int,
+        mysql::id_long >::query_type,
+      mysql::id_long >
+    numReserves_type_;
+
+    static const numReserves_type_ numReserves;
   };
 
   template <typename A>
@@ -210,9 +232,19 @@ namespace odb
   maximPlaces (A::table_name, "`maximPlaces`", 0);
 
   template <typename A>
+  const typename query_columns< ::Experiencia, id_mysql, A >::preu_type_
+  query_columns< ::Experiencia, id_mysql, A >::
+  preu (A::table_name, "`preu`", 0);
+
+  template <typename A>
   const typename query_columns< ::Experiencia, id_mysql, A >::dataAlta_type_
   query_columns< ::Experiencia, id_mysql, A >::
   dataAlta (A::table_name, "`dataAlta`", 0);
+
+  template <typename A>
+  const typename query_columns< ::Experiencia, id_mysql, A >::numReserves_type_
+  query_columns< ::Experiencia, id_mysql, A >::
+  numReserves (A::table_name, "`numReserves`", 0);
 
   template <typename A>
   struct pointer_query_columns< ::Experiencia, id_mysql, A >:
@@ -279,101 +311,26 @@ namespace odb
       int maximPlaces_value;
       my_bool maximPlaces_null;
 
+      // preu
+      //
+      float preu_value;
+      my_bool preu_null;
+
       // dataAlta
       //
       details::buffer dataAlta_value;
       unsigned long dataAlta_size;
       my_bool dataAlta_null;
 
+      // numReserves
+      //
+      int numReserves_value;
+      my_bool numReserves_null;
+
       std::size_t version;
     };
 
     struct extra_statement_cache_type;
-
-    // categories
-    //
-    struct categories_traits
-    {
-      static const std::size_t id_column_count = 1UL;
-      static const std::size_t data_column_count = 3UL;
-
-      static const bool versioned = false;
-
-      static const char insert_statement[];
-      static const char select_statement[];
-      static const char delete_statement[];
-
-      typedef ::std::vector< ::std::shared_ptr< ::Categoria > > container_type;
-      typedef
-      odb::access::container_traits<container_type>
-      container_traits_type;
-      typedef container_traits_type::index_type index_type;
-      typedef container_traits_type::value_type value_type;
-
-      typedef ordered_functions<index_type, value_type> functions_type;
-      typedef mysql::container_statements< categories_traits > statements_type;
-
-      struct data_image_type
-      {
-        // index
-        //
-        unsigned long long index_value;
-        my_bool index_null;
-
-        // value
-        //
-        details::buffer value_value;
-        unsigned long value_size;
-        my_bool value_null;
-
-        std::size_t version;
-      };
-
-      static void
-      bind (MYSQL_BIND*,
-            const MYSQL_BIND* id,
-            std::size_t id_size,
-            data_image_type&);
-
-      static void
-      grow (data_image_type&,
-            my_bool*);
-
-      static void
-      init (data_image_type&,
-            index_type*,
-            const value_type&);
-
-      static void
-      init (index_type&,
-            value_type&,
-            const data_image_type&,
-            database*);
-
-      static void
-      insert (index_type, const value_type&, void*);
-
-      static bool
-      select (index_type&, value_type&, void*);
-
-      static void
-      delete_ (void*);
-
-      static void
-      persist (const container_type&,
-               statements_type&);
-
-      static void
-      load (container_type&,
-            statements_type&);
-
-      static void
-      update (const container_type&,
-              statements_type&);
-
-      static void
-      erase (statements_type&);
-    };
 
     using object_traits<object_type>::id;
 
@@ -416,7 +373,7 @@ namespace odb
 
     typedef mysql::query_base query_base_type;
 
-    static const std::size_t column_count = 6UL;
+    static const std::size_t column_count = 8UL;
     static const std::size_t id_column_count = 1UL;
     static const std::size_t inverse_column_count = 0UL;
     static const std::size_t readonly_column_count = 1UL;

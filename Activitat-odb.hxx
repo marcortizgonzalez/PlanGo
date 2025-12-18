@@ -17,7 +17,6 @@
 
 #include "Activitat.hxx"
 
-#include "Categoria-odb.hxx"
 #include "Experiencia-odb.hxx"
 
 #include <memory>
@@ -139,18 +138,6 @@ namespace odb
     durada_type_;
 
     static const durada_type_ durada;
-
-    // preuPersona
-    //
-    typedef
-    mysql::query_column<
-      mysql::value_traits<
-        float,
-        mysql::id_float >::query_type,
-      mysql::id_float >
-    preuPersona_type_;
-
-    static const preuPersona_type_ preuPersona;
   };
 
   template <typename A>
@@ -162,11 +149,6 @@ namespace odb
   const typename query_columns< ::Activitat, id_mysql, A >::durada_type_
   query_columns< ::Activitat, id_mysql, A >::
   durada (A::table_name, "`durada`", 0);
-
-  template <typename A>
-  const typename query_columns< ::Activitat, id_mysql, A >::preuPersona_type_
-  query_columns< ::Activitat, id_mysql, A >::
-  preuPersona (A::table_name, "`preuPersona`", 0);
 
   template <typename A>
   struct pointer_query_columns< ::Activitat, id_mysql, A >:
@@ -201,11 +183,6 @@ namespace odb
       //
       int durada_value;
       my_bool durada_null;
-
-      // preuPersona
-      //
-      float preuPersona_value;
-      my_bool preuPersona_null;
 
       std::size_t version;
     };
@@ -259,7 +236,7 @@ namespace odb
 
     typedef mysql::query_base query_base_type;
 
-    static const std::size_t column_count = 3UL;
+    static const std::size_t column_count = 2UL;
     static const std::size_t id_column_count = 1UL;
     static const std::size_t inverse_column_count = 0UL;
     static const std::size_t readonly_column_count = 0UL;
