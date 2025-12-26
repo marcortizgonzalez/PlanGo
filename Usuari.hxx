@@ -4,36 +4,32 @@
 #include <memory>
 #include <odb/core.hxx>
 
-class Reserva; // Declaración anticipada para evitar dependencias circulares
+class Reserva; // Declaración anticipada
 
-// Clase persistente que representa a un usuario registrado en el sistema
+// Clase persistente que representa a un usuario
 #pragma db object
 class Usuari {
 public:
-    // Constructor: Inicializa un nuevo usuario con sus datos personales
+    // Constructor: Crea usuario con sus datos personales
     Usuari(std::string sobrenom, std::string nom, std::string correu, std::string pass, int edat)
         : sobrenom(sobrenom), nom(nom), correuElectronic(correu), contrasenya(pass), edat(edat) {
     }
 
-    // --- MÉTODOS DE ACCESO (Getters) ---
+    // --- GETTERS ---
+    const std::string& getSobrenom() const { return sobrenom; } // ID único
+    const std::string& getNom() const { return nom; }
+    const std::string& getCorreuElectronic() const { return correuElectronic; }
+    const std::string& getContrasenya() const { return contrasenya; }
+    int getEdat() const { return edat; }
+    const std::string& getUsername() const { return sobrenom; } // Alias
 
-    const std::string& getSobrenom() const { return sobrenom; } // Devuelve el sobrenombre (ID único)
-    const std::string& getNom() const { return nom; }           // Devuelve el nombre real
-    const std::string& getCorreuElectronic() const { return correuElectronic; } // Devuelve el email
-    const std::string& getContrasenya() const { return contrasenya; } // Devuelve la contraseña
-    int getEdat() const { return edat; }                        // Devuelve la edad
-
-    // Alias de compatibilidad (Sobrenom = Username)
-    const std::string& getUsername() const { return sobrenom; }
-
-    // --- MÉTODOS DE MODIFICACIÓN (Setters) ---
-
+    // --- SETTERS ---
     void setNom(const std::string& n) { nom = n; }
     void setCorreuElectronic(const std::string& c) { correuElectronic = c; }
     void setContrasenya(const std::string& c) { contrasenya = c; }
     void setEdat(int e) { edat = e; }
 
-    // Devuelve la lista de reservas asociadas a este usuario (Relación 1:N)
+    // Devuelve el vector de reservas (se llena manualmente en CapaDeDades)
     std::vector<std::shared_ptr<Reserva>>& getReserves() { return reserves; }
 
 private:
@@ -43,16 +39,17 @@ private:
     // --- ATRIBUTOS PERSISTENTES ---
 
 #pragma db id
-    std::string sobrenom;    // Clave primaria (Nickname)
+    std::string sobrenom;
 
     std::string nom;
 
 #pragma db index unique
-    std::string correuElectronic; // Índice único para evitar emails duplicados
+    std::string correuElectronic;
 
     std::string contrasenya;
     int edat;
 
-#pragma db inverse(usuari)
-    std::vector<std::shared_ptr<Reserva>> reserves; // Relación inversa con Reserva
+    // 'transient': ODB ignora esto para evitar ciclos, lo gestionamos por código
+#pragma db transient
+    std::vector<std::shared_ptr<Reserva>> reserves;
 };

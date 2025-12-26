@@ -1,25 +1,25 @@
 #pragma once
 #include <string>
 
-// Clase DTO para transferir datos de experiencias a la capa de presentación
+// Clase DTO (Data Transfer Object) para enviar datos de experiencias desde Dominio a Presentación
+// Evita exponer la entidad 'Experiencia' completa a la interfaz gráfica.
 class DTOExperiencia {
 public:
-    // Constructor: Inicializa el objeto con todos los datos de la experiencia
+    // Inicializa todos los datos necesarios para la UI
     DTOExperiencia(std::string t, std::string n, std::string d, std::string c,
-        int maxP, float p, std::string det, int nRes)
-        : tipus(t), nom(n), descripcio(d), ciutat(c), maximPlaces(maxP), preu(p), detalls(det), numReserves(nRes) {
+        int maxP, float p, std::string det)
+        : tipus(t), nom(n), descripcio(d), ciutat(c), maximPlaces(maxP), preu(p), detalls(det) {
     }
 
     // --- MÉTODOS DE ACCESO (Getters) ---
 
-    std::string obteTipus() const { return tipus; }       // Devuelve el tipo (ESCAPADA o ACTIVITAT)
-    std::string obteNom() const { return nom; }           // Devuelve el nombre de la experiencia
-    std::string obteDescripcio() const { return descripcio; } // Devuelve la descripción
-    std::string obteCiutat() const { return ciutat; }     // Devuelve la ciudad
-    int obteMaximPlaces() const { return maximPlaces; }   // Devuelve el aforo máximo
-    float obtePreu() const { return preu; }               // Devuelve el precio
-    std::string obteDetalls() const { return detalls; }   // Devuelve datos específicos (Hotel/Noches o Duración)
-	int obteNumReserves() const { return numReserves; }   // Devuelve el número de reservas
+    std::string obteTipus() const { return tipus; }       // Retorna "ACTIVITAT" o "ESCAPADA"
+    std::string obteNom() const { return nom; }           // Nombre de la experiencia
+    std::string obteDescripcio() const { return descripcio; } // Descripción corta
+    std::string obteCiutat() const { return ciutat; }     // Ubicación
+    int obteMaximPlaces() const { return maximPlaces; }   // Aforo máximo
+    float obtePreu() const { return preu; }               // Precio base (por persona o total según tipo)
+    std::string obteDetalls() const { return detalls; }   // Info específica (Duración o Hotel/Noches)
 
 private:
     std::string tipus;
@@ -29,5 +29,4 @@ private:
     int maximPlaces;
     float preu;
     std::string detalls;
-    int numReserves;
 };
