@@ -9,9 +9,9 @@ CREATE TABLE `Experiencia` (
   `typeid` VARCHAR(128) NOT NULL,
   `descripcio` TEXT NOT NULL,
   `ciutat` TEXT NOT NULL,
+  `dataAlta` TEXT NOT NULL,
   `maximPlaces` INT NOT NULL,
   `preu` FLOAT NOT NULL,
-  `dataAlta` TEXT NOT NULL,
   `numReserves` INT NOT NULL)
  ENGINE=InnoDB;
 
