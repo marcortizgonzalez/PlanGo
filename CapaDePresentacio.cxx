@@ -245,6 +245,7 @@ void CapaDePresentacio::reservarEscapada() {
 }
 
 // Flujo visual para reservar una Actividad
+// Bucle de reintento si se supera el aforo
 void CapaDePresentacio::reservarActivitat() {
     try {
         cout << "\n** Reservar activitat **" << endl;
@@ -266,28 +267,54 @@ void CapaDePresentacio::reservarActivitat() {
         cout << dto.obteDetalls() << endl; // Durada
         cout << "Preu per persona: " << dto.obtePreu() << " eur" << endl;
 
-        // 3. Pedir personas
-        cout << "\nNombre de persones: ";
-        cin >> persones;
-        cin.ignore();
+        // --- INICIO BUCLE DE REINTENTO ---
+        bool intentar = true;
+        while (intentar) {
+            // 3. Pedir personas
+            cout << "\nNombre de persones: ";
+            cin >> persones;
+            cin.ignore();
 
-        // 4. Mostrar precio total calculado
-        float total = CapaDeDomini::getInstance().calcularPreuReserva(nom, persones);
-        cout << "Preu total de la reserva: " << total << " eur" << endl;
+            // 4. Mostrar precio total calculado
+            float total = CapaDeDomini::getInstance().calcularPreuReserva(nom, persones);
+            cout << "Preu total de la reserva: " << total << " eur" << endl;
 
-        // 5. Confirmar
-        cout << "Vols continuar amb la reserva? (S/N): ";
-        cin >> confirm;
-        cin.ignore();
+            // 5. Confirmar
+            cout << "Vols continuar amb la reserva? (S/N): ";
+            cin >> confirm;
+            cin.ignore();
 
-        if (confirm == "S" || confirm == "s") {
-            CapaDeDomini::getInstance().reservarActivitat(nom, persones);
-            cout << "Reserva registrada correctament." << endl;
+            if (confirm == "S" || confirm == "s") {
+                try {
+                    // Intentamos realizar la reserva
+                    CapaDeDomini::getInstance().reservarActivitat(nom, persones);
+                    cout << "Reserva registrada correctament." << endl;
+                    intentar = false; // Éxito, salimos del bucle
+                }
+                catch (const std::exception& e) {
+                    // ERROR: Aforo superado
+                    // La excepción 'e' ya contiene el mensaje con las plazas disponibles (viene de CapaDeDomini)
+                    cout << "\nERROR: " << e.what() << endl;
+
+                    // Preguntamos si quiere reintentar o salir
+                    string opcio;
+                    cout << "Vols entrar un numero alternatiu? (S/N) (N per finalitzar): ";
+                    cin >> opcio;
+                    cin.ignore();
+
+                    if (opcio != "S" && opcio != "s") {
+                        cout << "Operacio finalitzada per l'usuari." << endl;
+                        intentar = false; // Salimos del bucle sin reservar
+                    }
+                    // Si es 'S', el bucle se repite y vuelve a pedir "Nombre de persones"
+                }
+            }
+            else {
+                cout << "Reserva cancel lada." << endl;
+                intentar = false;
+            }
         }
-        else {
-            cout << "Reserva cancel lada." << endl;
-        }
-
+        // --- FIN BUCLE DE REINTENTO ---
     }
     catch (const std::exception& e) {
         cout << "Error: " << e.what() << endl;

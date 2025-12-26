@@ -77,19 +77,31 @@ void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouCorreu, in
     CapaDeDades::getInstance().modificaUsuari(usuariLoggejat);
 }
 
-// Elimina el usuario y sus reservas
+// Elimina el usuario y libera las plazas (confiando en ON DELETE CASCADE para las reservas)
 void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari.");
     if (usuariLoggejat->getContrasenya() != contrasenya) throw std::runtime_error("Contrasenya incorrecta.");
 
     auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
 
-    // Borramos las reservas asociadas de la BD
+    // Iteramos las reservas para liberar las plazas en las Experiencias
     for (auto& r : reserves) {
-        CapaDeDades::getInstance().esborrarReserva(r);
+        auto exp = r->getExperiencia();
+        int placesAlliberades = r->getNumPlaces();
+        int actuals = exp->getNumReserves();
+
+        // Restamos las plazas (evitando negativos por seguridad)
+        int novesReserves = (actuals >= placesAlliberades) ? (actuals - placesAlliberades) : 0;
+        exp->setNumReserves(novesReserves);
+
+        // Actualizamos la Experiencia en la BD
+        CapaDeDades::getInstance().actualitzaExperiencia(exp);
+
+        // NOTA: NO borramos la reserva explícitamente (esborrarReserva),
+        // ya que la restricción ON DELETE CASCADE de la BD lo hará al borrar el usuario.
     }
 
-    // Borramos el usuario
+    // Borramos el usuario (esto disparará el borrado en cascada de sus reservas en la BD)
     CapaDeDades::getInstance().esborrarUsuari(usuariLoggejat);
     usuariLoggejat = nullptr;
 }

@@ -16,7 +16,8 @@ CREATE TABLE `Reserva` (
 ALTER TABLE `Reserva`
   ADD CONSTRAINT `Reserva_usuari_fk`
     FOREIGN KEY (`usuari`)
-    REFERENCES `Usuari` (`sobrenom`),
+    REFERENCES `Usuari` (`sobrenom`)
+    ON DELETE CASCADE,
   ADD CONSTRAINT `Reserva_experiencia_fk`
     FOREIGN KEY (`experiencia`)
     REFERENCES `Experiencia` (`nom`);
