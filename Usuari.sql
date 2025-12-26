@@ -12,3 +12,6 @@ CREATE TABLE `Usuari` (
   `edat` INT NOT NULL)
  ENGINE=InnoDB;
 
+CREATE UNIQUE INDEX `correuElectronic_i`
+  ON `Usuari` (`correuElectronic`);
+

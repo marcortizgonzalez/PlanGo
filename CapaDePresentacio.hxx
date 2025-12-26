@@ -3,44 +3,52 @@
 
 class CapaDePresentacio {
 public:
-    // Patrón Singleton
+    // Obtiene la instancia única (Singleton) de la Capa de Presentación
     static CapaDePresentacio& getInstance() {
         static CapaDePresentacio instance;
         return instance;
     }
 
-    // --- MÉTODOS DE MENÚS (Gestión de flujo) ---
-    void inici();             // Menú inicial (Sin loggear) [cite: 94-97]
-    void menuPrincipal();     // Menú principal (Loggeado) [cite: 98-103]
+    // --- MÉTODOS DE MENÚS (Navegación) ---
 
-    // Submenús [cite: 109]
+    // Menú inicial para usuarios no logueados (Login, Registro, Consultas públicas)
+    void inici();
+
+    // Menú principal para usuarios logueados (Gestión cuenta, Reservas, etc.)
+    void menuPrincipal();
+
+    // Submenú para operaciones de perfil de usuario
     void menuGestioUsuaris();
+
+    // Submenú para realizar y consultar reservas
     void menuGestioReserves();
+
+    // Submenú para búsquedas y rankings
     void menuConsultes();
 
 private:
-    CapaDePresentacio() = default;
+    CapaDePresentacio() = default; // Constructor privado
 
-    // --- OPERACIONES DE CASOS DE ÚS (Sección 3) ---
+    // --- OPERACIONES DE CASOS DE USO (UI) ---
 
-    // 3.1 Gestió sessió i usuaris
-    void iniciarSessio();     // 3.1.1
-    void tancarSessio();      // 3.1.2
-    void registrarUsuari();   // 3.1.3
-    void consultarUsuari();   // 3.1.4
-    void modificarUsuari();   // 3.1.5
-    void esborrarUsuari();    // 3.1.6 (Ya lo tenías)
+    // 3.1 GESTIÓN SESIÓN Y USUARIOS
+    void iniciarSessio();     // Pide credenciales e inicia sesión
+    void tancarSessio();      // Cierra la sesión actual
+    void registrarUsuari();   // Formulario de registro de usuario
+    void consultarUsuari();   // Muestra datos del usuario actual
+    void modificarUsuari();   // Formulario para editar perfil
+    void esborrarUsuari();    // Pide confirmación y borra cuenta
 
-    // 3.2 Gestió reserves
-    void reservarEscapada();  // 3.2.1
-    void reservarActivitat(); // 3.2.2
-    void consultarReserves(); // 3.2.3
+    // 3.2 GESTIÓN RESERVAS
+    void reservarEscapada();  // Flujo visual para reservar escapada
+    void reservarActivitat(); // Flujo visual para reservar actividad
+    void consultarReserves(); // Muestra lista de reservas y totales
 
-    // 3.3 Consultes
-    void consultarExperiencies();   // 3.3.1
-    void consultaNovetats();        // 3.3.2 (Ya lo tenías)
-    void consultarMesReservades();  // 3.3.3
+    // 3.3 CONSULTAS
+    void consultarExperiencies(); // Buscador por filtros (ciudad/plazas)
+    void consultaNovetats();      // Muestra las últimas experiencias
+    void consultarMesReservades(); // Muestra ranking Top 5
 
-    // Helpers
-    void pausa(); // Para el "Prem Enter..."
+    // --- UTILIDADES ---
+    void pausa(); // Espera a que el usuario pulse Intro
 };

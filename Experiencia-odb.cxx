@@ -126,21 +126,21 @@ namespace odb
       grew = true;
     }
 
-    // maximPlaces
-    //
-    t[4UL] = 0;
-
-    // preu
-    //
-    t[5UL] = 0;
-
     // dataAlta
     //
-    if (t[6UL])
+    if (t[4UL])
     {
       i.dataAlta_value.capacity (i.dataAlta_size);
       grew = true;
     }
+
+    // maximPlaces
+    //
+    t[5UL] = 0;
+
+    // preu
+    //
+    t[6UL] = 0;
 
     // numReserves
     //
@@ -206,6 +206,16 @@ namespace odb
     b[n].is_null = &i.ciutat_null;
     n++;
 
+    // dataAlta
+    //
+    b[n].buffer_type = MYSQL_TYPE_STRING;
+    b[n].buffer = i.dataAlta_value.data ();
+    b[n].buffer_length = static_cast<unsigned long> (
+      i.dataAlta_value.capacity ());
+    b[n].length = &i.dataAlta_size;
+    b[n].is_null = &i.dataAlta_null;
+    n++;
+
     // maximPlaces
     //
     b[n].buffer_type = MYSQL_TYPE_LONG;
@@ -219,16 +229,6 @@ namespace odb
     b[n].buffer_type = MYSQL_TYPE_FLOAT;
     b[n].buffer = &i.preu_value;
     b[n].is_null = &i.preu_null;
-    n++;
-
-    // dataAlta
-    //
-    b[n].buffer_type = MYSQL_TYPE_STRING;
-    b[n].buffer = i.dataAlta_value.data ();
-    b[n].buffer_length = static_cast<unsigned long> (
-      i.dataAlta_value.capacity ());
-    b[n].length = &i.dataAlta_size;
-    b[n].is_null = &i.dataAlta_null;
     n++;
 
     // numReserves
@@ -350,6 +350,27 @@ namespace odb
       grew = grew || (cap != i.ciutat_value.capacity ());
     }
 
+    // dataAlta
+    //
+    {
+      ::std::string const& v =
+        o.dataAlta;
+
+      bool is_null (false);
+      std::size_t size (0);
+      std::size_t cap (i.dataAlta_value.capacity ());
+      mysql::value_traits<
+          ::std::string,
+          mysql::id_string >::set_image (
+        i.dataAlta_value,
+        size,
+        is_null,
+        v);
+      i.dataAlta_null = is_null;
+      i.dataAlta_size = static_cast<unsigned long> (size);
+      grew = grew || (cap != i.dataAlta_value.capacity ());
+    }
+
     // maximPlaces
     //
     {
@@ -376,27 +397,6 @@ namespace odb
           mysql::id_float >::set_image (
         i.preu_value, is_null, v);
       i.preu_null = is_null;
-    }
-
-    // dataAlta
-    //
-    {
-      ::std::string const& v =
-        o.dataAlta;
-
-      bool is_null (false);
-      std::size_t size (0);
-      std::size_t cap (i.dataAlta_value.capacity ());
-      mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_image (
-        i.dataAlta_value,
-        size,
-        is_null,
-        v);
-      i.dataAlta_null = is_null;
-      i.dataAlta_size = static_cast<unsigned long> (size);
-      grew = grew || (cap != i.dataAlta_value.capacity ());
     }
 
     // numReserves
@@ -470,6 +470,21 @@ namespace odb
         i.ciutat_null);
     }
 
+    // dataAlta
+    //
+    {
+      ::std::string& v =
+        o.dataAlta;
+
+      mysql::value_traits<
+          ::std::string,
+          mysql::id_string >::set_value (
+        v,
+        i.dataAlta_value,
+        i.dataAlta_size,
+        i.dataAlta_null);
+    }
+
     // maximPlaces
     //
     {
@@ -496,21 +511,6 @@ namespace odb
         v,
         i.preu_value,
         i.preu_null);
-    }
-
-    // dataAlta
-    //
-    {
-      ::std::string& v =
-        o.dataAlta;
-
-      mysql::value_traits<
-          ::std::string,
-          mysql::id_string >::set_value (
-        v,
-        i.dataAlta_value,
-        i.dataAlta_size,
-        i.dataAlta_null);
     }
 
     // numReserves
@@ -567,9 +567,9 @@ namespace odb
   "`typeid`, "
   "`descripcio`, "
   "`ciutat`, "
+  "`dataAlta`, "
   "`maximPlaces`, "
   "`preu`, "
-  "`dataAlta`, "
   "`numReserves`) "
   "VALUES "
   "(?, ?, ?, ?, ?, ?, ?, ?)";
@@ -580,9 +580,9 @@ namespace odb
   "`Experiencia`.`typeid`, "
   "`Experiencia`.`descripcio`, "
   "`Experiencia`.`ciutat`, "
+  "`Experiencia`.`dataAlta`, "
   "`Experiencia`.`maximPlaces`, "
   "`Experiencia`.`preu`, "
-  "`Experiencia`.`dataAlta`, "
   "`Experiencia`.`numReserves` "
   "FROM `Experiencia` "
   "WHERE `Experiencia`.`nom`=?";
@@ -599,9 +599,9 @@ namespace odb
   "SET "
   "`descripcio`=?, "
   "`ciutat`=?, "
+  "`dataAlta`=?, "
   "`maximPlaces`=?, "
   "`preu`=?, "
-  "`dataAlta`=?, "
   "`numReserves`=? "
   "WHERE `nom`=?";
 
@@ -615,9 +615,9 @@ namespace odb
   "`Experiencia`.`typeid`, "
   "`Experiencia`.`descripcio`, "
   "`Experiencia`.`ciutat`, "
+  "`Experiencia`.`dataAlta`, "
   "`Experiencia`.`maximPlaces`, "
   "`Experiencia`.`preu`, "
-  "`Experiencia`.`dataAlta`, "
   "`Experiencia`.`numReserves` "
   "FROM `Experiencia`";
 

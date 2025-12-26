@@ -157,6 +157,18 @@ namespace odb
 
     static const ciutat_type_ ciutat;
 
+    // dataAlta
+    //
+    typedef
+    mysql::query_column<
+      mysql::value_traits<
+        ::std::string,
+        mysql::id_string >::query_type,
+      mysql::id_string >
+    dataAlta_type_;
+
+    static const dataAlta_type_ dataAlta;
+
     // maximPlaces
     //
     typedef
@@ -180,18 +192,6 @@ namespace odb
     preu_type_;
 
     static const preu_type_ preu;
-
-    // dataAlta
-    //
-    typedef
-    mysql::query_column<
-      mysql::value_traits<
-        ::std::string,
-        mysql::id_string >::query_type,
-      mysql::id_string >
-    dataAlta_type_;
-
-    static const dataAlta_type_ dataAlta;
 
     // numReserves
     //
@@ -227,6 +227,11 @@ namespace odb
   ciutat (A::table_name, "`ciutat`", 0);
 
   template <typename A>
+  const typename query_columns< ::Experiencia, id_mysql, A >::dataAlta_type_
+  query_columns< ::Experiencia, id_mysql, A >::
+  dataAlta (A::table_name, "`dataAlta`", 0);
+
+  template <typename A>
   const typename query_columns< ::Experiencia, id_mysql, A >::maximPlaces_type_
   query_columns< ::Experiencia, id_mysql, A >::
   maximPlaces (A::table_name, "`maximPlaces`", 0);
@@ -235,11 +240,6 @@ namespace odb
   const typename query_columns< ::Experiencia, id_mysql, A >::preu_type_
   query_columns< ::Experiencia, id_mysql, A >::
   preu (A::table_name, "`preu`", 0);
-
-  template <typename A>
-  const typename query_columns< ::Experiencia, id_mysql, A >::dataAlta_type_
-  query_columns< ::Experiencia, id_mysql, A >::
-  dataAlta (A::table_name, "`dataAlta`", 0);
 
   template <typename A>
   const typename query_columns< ::Experiencia, id_mysql, A >::numReserves_type_
@@ -306,6 +306,12 @@ namespace odb
       unsigned long ciutat_size;
       my_bool ciutat_null;
 
+      // dataAlta
+      //
+      details::buffer dataAlta_value;
+      unsigned long dataAlta_size;
+      my_bool dataAlta_null;
+
       // maximPlaces
       //
       int maximPlaces_value;
@@ -315,12 +321,6 @@ namespace odb
       //
       float preu_value;
       my_bool preu_null;
-
-      // dataAlta
-      //
-      details::buffer dataAlta_value;
-      unsigned long dataAlta_size;
-      my_bool dataAlta_null;
 
       // numReserves
       //
