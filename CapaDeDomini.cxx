@@ -122,7 +122,6 @@ DTOExperiencia CapaDeDomini::obtenirDadesExperiencia(std::string nom) {
 }
 
 // Calcula el precio total aplicando el porcentaje de descuento global
-// CORRECCIÓN: Si es Escapada es precio fijo, si es Actividad es por persona.
 float CapaDeDomini::calcularPreuReserva(std::string nom, int persones) {
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
     if (!exp) throw std::runtime_error("L'experiencia no existeix.");
