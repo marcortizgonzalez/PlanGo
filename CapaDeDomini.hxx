@@ -10,67 +10,65 @@
 
 class CapaDeDomini {
 public:
-    // Obtiene la instancia única (Singleton) del controlador de dominio
     static CapaDeDomini& getInstance();
 
-    // --- GESTIÓN DE SESIÓN ---
+    // --- GESTIÓ SESSIÓ I USUARIS ---
 
-    // Valida credenciales e inicia sesión
-    void iniciarSessio(std::string u, std::string p);
+    // [3.1.1] Valida credenciales e inicia sesión
+    void iniciSessio(std::string u, std::string p);
 
-    // Devuelve el puntero al usuario actual
+    // [3.1.2] Cierra la sesión actual
+    void tancaSessio();
+
+    // Devuelve el usuario logueado
     std::shared_ptr<Usuari> getUsuariLoggejat() const { return usuariLoggejat; }
 
-    // Cierra la sesión actual
-    void tancarSessio() { usuariLoggejat = nullptr; }
+    // [3.1.3] Registra un nuevo usuario 
+    void registraUsuari(std::string n, std::string s, std::string c, std::string p, int e);
 
-    // --- GESTIÓN DE USUARIOS (Bloque A) ---
+    // [3.1.4] Consulta datos del usuario logueado 
+    DTOUsuari consultaUsuari();
 
-    // Registra un nuevo usuario en el sistema
-    void registrarUsuari(std::string n, std::string s, std::string c, std::string p, int e);
+    // [3.1.5] Modifica datos del usuario
+    void modificaUsuari(std::string n, std::string c, int e);
 
-    // Consulta los datos del usuario logueado
-    DTOUsuari consultarUsuari();
+    // [3.1.6] Borra usuario y sus reservas 
+    void esborraUsuari(std::string p);
 
-    // Modifica los datos del usuario logueado
-    void modificarUsuari(std::string n, std::string c, int e);
+    // --- GESTIÓ RESERVES ---
 
-    // Elimina el usuario actual y sus reservas
-    void esborrarUsuari(std::string p);
+    // [3.2.1] Consulta específica para Escapadas
+    DTOExperiencia consultaEscapada(std::string nom);
 
-    // --- GESTIÓN DE RESERVAS (Bloque B) ---
+    // [3.2.2] Consulta específica para Actividades
+    DTOExperiencia consultaActivitat(std::string nom);
 
-    // Obtiene datos de una experiencia para mostrar antes de reservar
-    DTOExperiencia obtenirDadesExperiencia(std::string nom);
+    // Calcula precio provisional 
+    float calculaPreu(std::string nom, int persones);
 
-    // Calcula el precio provisional de una reserva (útil para actividades)
-    float calcularPreuReserva(std::string nom, int persones);
+    // [3.2.1] Reserva escapada 
+    void reservaEscapada(std::string nom);
 
-    // Realiza la reserva de una escapada (plazas automáticas)
-    void reservarEscapada(std::string nom);
+    // [3.2.2] Reserva actividad 
+    void reservaActivitat(std::string nom, int persones);
 
-    // Realiza la reserva de una actividad (plazas manuales)
-    void reservarActivitat(std::string nom, int persones);
+    // [3.2.3] Consulta historial reservas 
+    std::vector<DTOReserva> consultaReserves();
 
-    // Consulta el historial de reservas del usuario
-    std::vector<DTOReserva> consultarReserves();
+    // --- CONSULTES ---
 
-    // --- CONSULTAS (Bloque C) ---
-
-    // Obtiene las últimas experiencias añadidas
+    // [3.3.2] Novedades
     std::vector<DTOExperiencia> consultarNovetats();
 
-    // Busca experiencias por ciudad y plazas
-    std::vector<DTOExperiencia> consultarExperiencies(std::string ciutat, int places);
+    // [3.3.1] Buscar experiencias 
+    std::vector<DTOExperiencia> consultaExperiencies(std::string ciutat, int places);
 
-    // Obtiene el ranking de experiencias más reservadas
-    std::vector<DTOExperiencia> consultarMesReservades();
+    // [3.3.3] Ranking 
+    std::vector<DTOExperiencia> consultaMesReservades();
 
 private:
-    CapaDeDomini() {} // Constructor privado
+    CapaDeDomini() {}
     std::shared_ptr<Usuari> usuariLoggejat;
-
-    // Métodos auxiliares internos
     void _processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces);
     std::string _obteDataActual();
 };
