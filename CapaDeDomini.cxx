@@ -8,35 +8,40 @@
 #include <iomanip>
 #include <sstream>
 
-// Patrón Singleton: Garantiza una única instancia del controlador de dominio
+// Singleton
 CapaDeDomini& CapaDeDomini::getInstance() {
     static CapaDeDomini instance;
     return instance;
 }
 
-// --- SESIÓN Y USUARIOS ---
+// --- GESTIÓ SESSIÓ I USUARIS ---
 
-// Verifica las credenciales contra la base de datos e inicia sesión
-void CapaDeDomini::iniciarSessio(std::string username, std::string contrasenya) {
+// [3.1.1] Inici Sessió
+void CapaDeDomini::iniciSessio(std::string username, std::string contrasenya) {
     auto usuari = CapaDeDades::getInstance().obtenirUsuari(username);
     if (!usuari) throw std::runtime_error("L'usuari no existeix.");
     if (usuari->getContrasenya() != contrasenya) throw std::runtime_error("Contrasenya incorrecta.");
     usuariLoggejat = usuari;
 }
 
-// Registra un nuevo usuario comprobando que el nickname y el correo sean únicos y sea mayor de edad
-void CapaDeDomini::registrarUsuari(std::string nom, std::string sobrenom, std::string correu,
+// [3.1.2] Tanca Sessió
+void CapaDeDomini::tancaSessio() {
+    usuariLoggejat = nullptr;
+}
+
+// [3.1.3] Registra Usuari
+void CapaDeDomini::registraUsuari(std::string nom, std::string sobrenom, std::string correu,
     std::string pass, int edat) {
 
-    // 1. Validar unicidad de Nickname
+    // Validar unicidad de Nickname [RIT]
     if (CapaDeDades::getInstance().obtenirUsuari(sobrenom) != nullptr) {
         throw std::runtime_error("El sobrenom '" + sobrenom + "' ja existeix.");
     }
-    // 2. Validar unicidad de Correo
+    // Validar unicidad de Correo [RIT2]
     if (CapaDeDades::getInstance().obtenirUsuariPerCorreu(correu) != nullptr) {
         throw std::runtime_error("El correu '" + correu + "' ja esta registrat.");
     }
-    // 3. Validar Mayoría de Edad (Restricción de integridad)
+    // Validar Mayoría de Edad [RIT1]
     if (edat < 18) {
         throw std::runtime_error("L'usuari ha de ser major d'edat.");
     }
@@ -45,10 +50,10 @@ void CapaDeDomini::registrarUsuari(std::string nom, std::string sobrenom, std::s
     CapaDeDades::getInstance().insertaUsuari(u);
 }
 
-// Obtiene los datos del usuario actual refrescados desde la BD
-DTOUsuari CapaDeDomini::consultarUsuari() {
+// [3.1.4] Consulta Usuari
+DTOUsuari CapaDeDomini::consultaUsuari() {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
-    // Refrescamos objeto por si hubo cambios externos
+    // Refrescamos datos de la BD
     auto usuariRefrescat = CapaDeDades::getInstance().obtenirUsuari(usuariLoggejat->getSobrenom());
     if (usuariRefrescat) usuariLoggejat = usuariRefrescat;
 
@@ -57,17 +62,17 @@ DTOUsuari CapaDeDomini::consultarUsuari() {
         usuariLoggejat->getCorreuElectronic(), usuariLoggejat->getEdat(), (int)reserves.size());
 }
 
-// Modifica el perfil validando que el nuevo correo no esté en uso y la mayoría de edad
-void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouCorreu, int nouEdat) {
+// [3.1.5] Modifica Usuari
+void CapaDeDomini::modificaUsuari(std::string nouNom, std::string nouCorreu, int nouEdat) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
 
-    // Validar correo duplicado solo si ha cambiado
+    // Validar correo nuevo si cambia
     if (!nouCorreu.empty() && nouCorreu != usuariLoggejat->getCorreuElectronic()) {
         auto existe = CapaDeDades::getInstance().obtenirUsuariPerCorreu(nouCorreu);
         if (existe) throw std::runtime_error("El correu electronic ja existeix.");
     }
     // Validar edad
-    if (nouEdat != -1 && nouEdat < 18) throw std::runtime_error("L'usuari es menor d'edat.");
+    if (nouEdat != -1 && nouEdat < 18) throw std::runtime_error("No es poden registrar usuaris menors");
 
     // Aplicar cambios
     if (!nouNom.empty()) usuariLoggejat->setNom(nouNom);
@@ -77,43 +82,35 @@ void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouCorreu, in
     CapaDeDades::getInstance().modificaUsuari(usuariLoggejat);
 }
 
-// Elimina el usuario y libera las plazas (confiando en ON DELETE CASCADE para las reservas)
-void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
+// [3.1.6] Esborra Usuari
+void CapaDeDomini::esborraUsuari(std::string contrasenya) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari.");
     if (usuariLoggejat->getContrasenya() != contrasenya) throw std::runtime_error("Contrasenya incorrecta.");
 
     auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
 
-    // Iteramos las reservas para liberar las plazas en las Experiencias
+    // Liberamos plazas (sin borrar reservas explícitamente, confiamos en CASCADE para el borrado)
     for (auto& r : reserves) {
         auto exp = r->getExperiencia();
         int placesAlliberades = r->getNumPlaces();
         int actuals = exp->getNumReserves();
-
-        // Restamos las plazas (evitando negativos por seguridad)
         int novesReserves = (actuals >= placesAlliberades) ? (actuals - placesAlliberades) : 0;
+
         exp->setNumReserves(novesReserves);
-
-        // Actualizamos la Experiencia en la BD
         CapaDeDades::getInstance().actualitzaExperiencia(exp);
-
-        // NOTA: NO borramos la reserva explícitamente (esborrarReserva),
-        // ya que la restricción ON DELETE CASCADE de la BD lo hará al borrar el usuario.
     }
 
-    // Borramos el usuario (esto disparará el borrado en cascada de sus reservas en la BD)
+    // Borrado del usuario (dispara ON DELETE CASCADE para reservas en BD)
     CapaDeDades::getInstance().esborrarUsuari(usuariLoggejat);
     usuariLoggejat = nullptr;
 }
 
 // --- RESERVAS ---
 
-// Helper: Obtiene la fecha/hora actual del sistema formateada
 std::string CapaDeDomini::_obteDataActual() {
     std::time_t t = std::time(nullptr);
     std::tm* now = std::localtime(&t);
     std::stringstream ss;
-    // Format: AAAA-MM-DD HH:MM
     ss << (now->tm_year + 1900) << "-"
         << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << "-"
         << std::setw(2) << std::setfill('0') << now->tm_mday << " "
@@ -122,37 +119,55 @@ std::string CapaDeDomini::_obteDataActual() {
     return ss.str();
 }
 
-// Recupera información de una experiencia para mostrar antes de reservar
-DTOExperiencia CapaDeDomini::obtenirDadesExperiencia(std::string nom) {
+// [3.2.1] Consulta Escapada
+DTOExperiencia CapaDeDomini::consultaEscapada(std::string nom) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
-    if (!exp) throw std::runtime_error("L'experiencia no existeix.");
+
+    // Validamos existencia y tipo
+    if (!exp) throw std::runtime_error("L'escapada no existeix.");
+    if (exp->obteTipus() == "ACTIVITAT") throw std::runtime_error("L'escapada no existeix."); // O "No es una escapada"
 
     return DTOExperiencia(exp->obteTipus(), exp->getNom(), exp->getDescripcio(),
         exp->getCiutat(), exp->getMaximPlaces(), exp->getPreu(),
         exp->obteDadesEspecifiques());
 }
 
-// Calcula el precio total aplicando el porcentaje de descuento global
-float CapaDeDomini::calcularPreuReserva(std::string nom, int persones) {
+// [3.2.2] Consulta Activitat
+DTOExperiencia CapaDeDomini::consultaActivitat(std::string nom) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
+    auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
+
+    // Validamos existencia y tipo
+    if (!exp) throw std::runtime_error("L'activitat no existeix.");
+    if (exp->obteTipus() != "ACTIVITAT") throw std::runtime_error("L'activitat no existeix.");
+
+    return DTOExperiencia(exp->obteTipus(), exp->getNom(), exp->getDescripcio(),
+        exp->getCiutat(), exp->getMaximPlaces(), exp->getPreu(),
+        exp->obteDadesEspecifiques());
+}
+
+// Calcula precio (Escapada = Total, Activitat = Por persona)
+float CapaDeDomini::calculaPreu(std::string nom, int persones) {
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
     if (!exp) throw std::runtime_error("L'experiencia no existeix.");
 
     float preuBase = 0.0f;
     if (exp->obteTipus() == "ACTIVITAT") {
-        preuBase = exp->getPreu() * persones; // Por persona
+        preuBase = exp->getPreu() * persones;
     }
     else {
-        preuBase = exp->getPreu(); // Total (Escapada)
+        preuBase = exp->getPreu();
     }
 
     float descompte = PlanGo::getInstance().getDescompte();
     return preuBase * ((100.0f - descompte) / 100.0f);
 }
 
-// Lógica interna: Valida aforo, calcula precio, crea reserva y actualiza plazas ocupadas
+// Lógica interna reserva
 void CapaDeDomini::_processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces) {
-    // 1. Validar disponibilidad
     int disponibles = exp->getMaximPlaces() - exp->getNumReserves();
 
     if (numPlaces > disponibles) {
@@ -161,45 +176,35 @@ void CapaDeDomini::_processarReserva(std::shared_ptr<Experiencia> exp, int numPl
         throw std::runtime_error(error);
     }
 
-    // 2. Calcular precio base según tipo (igual que en calcularPreuReserva)
     float preuBase = 0.0f;
-    if (exp->obteTipus() == "ACTIVITAT") {
-        preuBase = exp->getPreu() * numPlaces;
-    }
-    else {
-        preuBase = exp->getPreu(); // Precio paquete
-    }
+    if (exp->obteTipus() == "ACTIVITAT") preuBase = exp->getPreu() * numPlaces;
+    else preuBase = exp->getPreu();
 
-    // Aplicar descuento
     float descompte = PlanGo::getInstance().getDescompte();
     float preuFinal = preuBase * ((100.0f - descompte) / 100.0f);
 
-    // 3. Obtener fecha sistema
     std::string dataAra = _obteDataActual();
-
-    // 4. Crear reserva y actualizar aforo experiencia
     auto novaReserva = std::make_shared<Reserva>(numPlaces, preuFinal, dataAra, usuariLoggejat, exp);
+
     exp->setNumReserves(exp->getNumReserves() + numPlaces);
 
     CapaDeDades::getInstance().insertaReserva(novaReserva);
     CapaDeDades::getInstance().actualitzaExperiencia(exp);
 }
-
-// Gestiona reserva de Escapada (se ocupa siempre el máximo de plazas)
-void CapaDeDomini::reservarEscapada(std::string nomEscapada) {
+// [3.2.1] Reserva Escapada
+void CapaDeDomini::reservaEscapada(std::string nomEscapada) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
 
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomEscapada);
     if (!exp) throw std::runtime_error("L'escapada no existeix.");
     if (exp->obteTipus() == "ACTIVITAT") throw std::runtime_error("No es una escapada.");
 
-    // Escapada: Se reservan TODAS las plazas
     int placesAReservar = exp->getMaximPlaces();
     _processarReserva(exp, placesAReservar);
 }
 
-// Gestiona reserva de Actividad (número de personas variable)
-void CapaDeDomini::reservarActivitat(std::string nomActivitat, int numPersones) {
+// [3.2.2] Reserva Activitat
+void CapaDeDomini::reservaActivitat(std::string nomActivitat, int numPersones) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
 
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomActivitat);
@@ -211,8 +216,8 @@ void CapaDeDomini::reservarActivitat(std::string nomActivitat, int numPersones) 
     _processarReserva(exp, numPersones);
 }
 
-// Obtiene el historial de reservas del usuario actual
-std::vector<DTOReserva> CapaDeDomini::consultarReserves() {
+// [3.2.3] Consulta Reserves
+std::vector<DTOReserva> CapaDeDomini::consultaReserves() {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
     auto reserves = CapaDeDades::getInstance().obtenirReservesUsuari(usuariLoggejat);
     std::vector<DTOReserva> result;
@@ -225,16 +230,14 @@ std::vector<DTOReserva> CapaDeDomini::consultarReserves() {
     return result;
 }
 
-// --- CONSULTAS ---
+// --- CONSULTES ---
 
-// Retorna las 10 experiencias más recientes
+// [3.3.2] Consultar Novetats
 std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     auto totes = CapaDeDades::getInstance().totesExperiencies();
-    // Ordenar por fecha de alta descendente
     std::sort(totes.begin(), totes.end(), [](const std::shared_ptr<Experiencia>& a, const std::shared_ptr<Experiencia>& b) {
         return a->getDataAlta() > b->getDataAlta();
         });
-
     std::vector<DTOExperiencia> res;
     int limit = std::min((int)totes.size(), 10);
     for (int i = 0; i < limit; ++i) {
@@ -245,12 +248,10 @@ std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     return res;
 }
 
-// Filtra experiencias por ciudad y plazas disponibles
-std::vector<DTOExperiencia> CapaDeDomini::consultarExperiencies(std::string ciutat, int places) {
+// [3.3.1] Consulta Experiencies (por ciudad)
+std::vector<DTOExperiencia> CapaDeDomini::consultaExperiencies(std::string ciutat, int places) {
     if (places < 1) throw std::runtime_error("El nombre de persones ha de ser major que 0.");
-
     auto llista = CapaDeDades::getInstance().cercarExperiencies(ciutat, places);
-
     std::vector<DTOExperiencia> res;
     for (const auto& e : llista) {
         res.emplace_back(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
@@ -259,8 +260,8 @@ std::vector<DTOExperiencia> CapaDeDomini::consultarExperiencies(std::string ciut
     return res;
 }
 
-// Ranking de experiencias más reservadas
-std::vector<DTOExperiencia> CapaDeDomini::consultarMesReservades() {
+// [3.3.3] Consulta Més Reservades (Ranking)
+std::vector<DTOExperiencia> CapaDeDomini::consultaMesReservades() {
     auto llista = CapaDeDades::getInstance().experienciesMesReservades();
     std::vector<DTOExperiencia> res;
     for (const auto& e : llista) {
