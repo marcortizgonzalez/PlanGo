@@ -77,7 +77,7 @@ void CapaDeDomini::modificarUsuari(std::string nouNom, std::string nouCorreu, in
     CapaDeDades::getInstance().modificaUsuari(usuariLoggejat);
 }
 
-// Elimina el usuario y sus reservas (Nota: NO libera las plazas en las experiencias)
+// Elimina el usuario y sus reservas
 void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari.");
     if (usuariLoggejat->getContrasenya() != contrasenya) throw std::runtime_error("Contrasenya incorrecta.");
