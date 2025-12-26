@@ -1,8 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "CapaDeDomini.hxx"
 #include "CapaDeDades.hxx"
 #include "PlanGo.hxx"
 #include <algorithm>
 #include <stdexcept>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 CapaDeDomini& CapaDeDomini::getInstance() {
     static CapaDeDomini instance;
@@ -26,7 +30,6 @@ void CapaDeDomini::registrarUsuari(std::string nom, std::string sobrenom, std::s
     if (CapaDeDades::getInstance().obtenirUsuariPerCorreu(correu) != nullptr) {
         throw std::runtime_error("El correu '" + correu + "' ja esta registrat.");
     }
-
     auto u = std::make_shared<Usuari>(sobrenom, nom, correu, pass, edat);
     CapaDeDades::getInstance().insertaUsuari(u);
 }
@@ -64,35 +67,89 @@ void CapaDeDomini::esborrarUsuari(std::string contrasenya) {
 
 // --- RESERVAS ---
 
-void CapaDeDomini::_processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces, std::string data) {
-    if (exp->getNumReserves() + numPlaces > exp->getMaximPlaces()) {
-        throw std::runtime_error("No hi ha places suficients.");
+std::string CapaDeDomini::_obteDataActual() {
+    std::time_t t = std::time(nullptr);
+    std::tm* now = std::localtime(&t);
+    std::stringstream ss;
+    // Format: AAAA-MM-DD HH:MM
+    ss << (now->tm_year + 1900) << "-"
+        << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << "-"
+        << std::setw(2) << std::setfill('0') << now->tm_mday << " "
+        << std::setw(2) << std::setfill('0') << now->tm_hour << ":"
+        << std::setw(2) << std::setfill('0') << now->tm_min;
+    return ss.str();
+}
+
+DTOExperiencia CapaDeDomini::obtenirDadesExperiencia(std::string nom) {
+    if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+    auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
+    if (!exp) throw std::runtime_error("L'experiencia no existeix.");
+
+    return DTOExperiencia(exp->obteTipus(), exp->getNom(), exp->getDescripcio(),
+        exp->getCiutat(), exp->getMaximPlaces(), exp->getPreu(),
+        exp->obteDadesEspecifiques());
+}
+
+float CapaDeDomini::calcularPreuReserva(std::string nom, int persones) {
+    auto exp = CapaDeDades::getInstance().obtenirExperiencia(nom);
+    if (!exp) throw std::runtime_error("L'experiencia no existeix.");
+
+    float preuBase = exp->getPreu() * persones;
+    float descompte = PlanGo::getInstance().getDescompte();
+    return preuBase * ((100.0f - descompte) / 100.0f);
+}
+
+void CapaDeDomini::_processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces) {
+    // 1. Validar disponibilitat amb detall
+    int disponibles = exp->getMaximPlaces() - exp->getNumReserves();
+
+    if (numPlaces > disponibles) {
+        // Generem un error detallat per entendre què passa
+        std::string error = "No hi ha places suficients. Sol·licitades: " + std::to_string(numPlaces) +
+            ", Disponibles: " + std::to_string(disponibles);
+        throw std::runtime_error(error);
     }
+
+    // 2. Calcular preu final
     float preuBase = exp->getPreu() * numPlaces;
     float descompte = PlanGo::getInstance().getDescompte();
     float preuFinal = preuBase * ((100.0f - descompte) / 100.0f);
 
-    auto novaReserva = std::make_shared<Reserva>(numPlaces, preuFinal, data, usuariLoggejat, exp);
+    // 3. Obtenir Data Sistema
+    std::string dataAra = _obteDataActual();
+
+    // 4. Crear i guardar
+    auto novaReserva = std::make_shared<Reserva>(numPlaces, preuFinal, dataAra, usuariLoggejat, exp);
     exp->setNumReserves(exp->getNumReserves() + numPlaces);
 
     CapaDeDades::getInstance().insertaReserva(novaReserva);
     CapaDeDades::getInstance().actualitzaExperiencia(exp);
 }
 
-void CapaDeDomini::reservarEscapada(std::string nomEscapada, int numPersones, std::string data) {
+
+void CapaDeDomini::reservarEscapada(std::string nomEscapada) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomEscapada);
     if (!exp) throw std::runtime_error("L'escapada no existeix.");
     if (exp->obteTipus() == "ACTIVITAT") throw std::runtime_error("No es una escapada.");
-    _processarReserva(exp, numPersones, data);
+
+    // Escapada: Se reservan TODAS las plazas (el máximo)
+    int placesAReservar = exp->getMaximPlaces();
+
+    _processarReserva(exp, placesAReservar);
 }
 
-void CapaDeDomini::reservarActivitat(std::string nomActivitat, int numPersones, std::string data) {
+void CapaDeDomini::reservarActivitat(std::string nomActivitat, int numPersones) {
     if (!usuariLoggejat) throw std::runtime_error("No hi ha usuari loggejat.");
+
     auto exp = CapaDeDades::getInstance().obtenirExperiencia(nomActivitat);
     if (!exp) throw std::runtime_error("L'activitat no existeix.");
     if (exp->obteTipus() != "ACTIVITAT") throw std::runtime_error("No es una activitat.");
-    _processarReserva(exp, numPersones, data);
+
+    if (numPersones < 1) throw std::runtime_error("El nombre de persones ha de ser major que 0.");
+
+    _processarReserva(exp, numPersones);
 }
 
 std::vector<DTOReserva> CapaDeDomini::consultarReserves() {
@@ -108,13 +165,15 @@ std::vector<DTOReserva> CapaDeDomini::consultarReserves() {
     return result;
 }
 
-// --- CONSULTAS BLOQUE C ---
+// --- CONSULTAS ---
 
 std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     auto totes = CapaDeDades::getInstance().totesExperiencies();
+    // Ordenar por fecha DESC (más reciente primero)
     std::sort(totes.begin(), totes.end(), [](const std::shared_ptr<Experiencia>& a, const std::shared_ptr<Experiencia>& b) {
         return a->getDataAlta() > b->getDataAlta();
         });
+
     std::vector<DTOExperiencia> res;
     int limit = std::min((int)totes.size(), 10);
     for (int i = 0; i < limit; ++i) {
@@ -125,8 +184,11 @@ std::vector<DTOExperiencia> CapaDeDomini::consultarNovetats() {
     return res;
 }
 
-std::vector<DTOExperiencia> CapaDeDomini::consultarExperiencies(std::string ciutat, float preuMax) {
-    auto llista = CapaDeDades::getInstance().cercarExperiencies(ciutat, preuMax);
+std::vector<DTOExperiencia> CapaDeDomini::consultarExperiencies(std::string ciutat, int places) {
+    if (places < 1) throw std::runtime_error("El nombre de persones ha de ser major que 0.");
+
+    auto llista = CapaDeDades::getInstance().cercarExperiencies(ciutat, places);
+
     std::vector<DTOExperiencia> res;
     for (const auto& e : llista) {
         res.emplace_back(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
@@ -137,10 +199,10 @@ std::vector<DTOExperiencia> CapaDeDomini::consultarExperiencies(std::string ciut
 
 std::vector<DTOExperiencia> CapaDeDomini::consultarMesReservades() {
     auto llista = CapaDeDades::getInstance().experienciesMesReservades();
+
     std::vector<DTOExperiencia> res;
-    int limit = std::min((int)llista.size(), 10);
-    for (int i = 0; i < limit; ++i) {
-        auto e = llista[i];
+
+    for (const auto& e : llista) {
         res.emplace_back(e->obteTipus(), e->getNom(), e->getDescripcio(), e->getCiutat(),
             e->getMaximPlaces(), e->getPreu(), e->obteDadesEspecifiques());
     }

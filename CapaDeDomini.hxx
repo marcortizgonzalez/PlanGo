@@ -12,29 +12,32 @@ class CapaDeDomini {
 public:
     static CapaDeDomini& getInstance();
 
-    // Sessió
-    void iniciarSessio(std::string username, std::string contrasenya);
+    // Sessió i Usuaris
+    void iniciarSessio(std::string u, std::string p);
     std::shared_ptr<Usuari> getUsuariLoggejat() const { return usuariLoggejat; }
     void tancarSessio() { usuariLoggejat = nullptr; }
-
-    // Bloque A: Usuaris
-    void registrarUsuari(std::string nom, std::string sobrenom, std::string correu, std::string pass, int edat);
+    void registrarUsuari(std::string n, std::string s, std::string c, std::string p, int e);
     DTOUsuari consultarUsuari();
-    void modificarUsuari(std::string nouNom, std::string nouCorreu, int nouEdat);
-    void esborrarUsuari(std::string contrasenya);
+    void modificarUsuari(std::string n, std::string c, int e);
+    void esborrarUsuari(std::string p);
 
-    // Bloque B: Reserves
-    void reservarEscapada(std::string nomEscapada, int numPersones, std::string data);
-    void reservarActivitat(std::string nomActivitat, int numPersones, std::string data);
+    // Reserves
+    DTOExperiencia obtenirDadesExperiencia(std::string nom);
+    float calcularPreuReserva(std::string nom, int persones);
+    void reservarEscapada(std::string nom);
+    void reservarActivitat(std::string nom, int persones);
     std::vector<DTOReserva> consultarReserves();
 
-    // Bloque C: Consultes
+    // Consultes
     std::vector<DTOExperiencia> consultarNovetats();
-    std::vector<DTOExperiencia> consultarExperiencies(std::string ciutat, float preuMax);
+
+    std::vector<DTOExperiencia> consultarExperiencies(std::string ciutat, int places);
+
     std::vector<DTOExperiencia> consultarMesReservades();
 
 private:
     CapaDeDomini() {}
     std::shared_ptr<Usuari> usuariLoggejat;
-    void _processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces, std::string data);
+    void _processarReserva(std::shared_ptr<Experiencia> exp, int numPlaces);
+    std::string _obteDataActual();
 };
