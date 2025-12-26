@@ -3,18 +3,22 @@
 #include <iostream>
 #include <limits> 
 #include <string>
-#include <iomanip>
+#include <iomanip> // Imprescindible per 'setprecision'
 
 using namespace std;
 
+// --- Helpers ---
+
+// Pausa la ejecución hasta que el usuario pulse Intro
 void CapaDePresentacio::pausa() {
-    cout << "Prem Intro per continuar...";
+    cout << "\nPrem Intro per continuar...";
     string dummy;
     getline(cin, dummy);
 }
 
+// --- MENÚS ---
 
-
+// Menú inicial para usuarios no logueados (Login, Registro, Consultas)
 void CapaDePresentacio::inici() {
     int opcio = -1;
     while (opcio != 0) {
@@ -33,6 +37,8 @@ void CapaDePresentacio::inici() {
         }
     }
 }
+
+// Menú principal para usuarios logueados (Gestión de cuenta, Reservas, Consultas)
 void CapaDePresentacio::menuPrincipal() {
     int opcio = -1;
     while (opcio != 0 && CapaDeDomini::getInstance().getUsuariLoggejat()) {
@@ -53,10 +59,12 @@ void CapaDePresentacio::menuPrincipal() {
         }
     }
 }
+
+// Submenú para operaciones sobre el perfil del usuario (Consultar, Modificar, Borrar)
 void CapaDePresentacio::menuGestioUsuaris() {
     int opcio = -1;
     while (opcio != 0) {
-        cout << "\n--- GESTIO USUARI ---" << endl;
+        cout << "\n--- GESTIO USUARIS ---" << endl;
         cout << "1. Consulta usuari" << endl;
         cout << "2. Modifica usuari" << endl;
         cout << "3. Esborra usuari" << endl;
@@ -73,6 +81,8 @@ void CapaDePresentacio::menuGestioUsuaris() {
         }
     }
 }
+
+// Submenú para gestionar reservas (Crear y Visualizar)
 void CapaDePresentacio::menuGestioReserves() {
     int opcio = -1;
     while (opcio != 0) {
@@ -91,6 +101,8 @@ void CapaDePresentacio::menuGestioReserves() {
         }
     }
 }
+
+// Submenú para realizar búsquedas y ver rankings
 void CapaDePresentacio::menuConsultes() {
     int opcio = -1;
     while (opcio != 0) {
@@ -109,6 +121,10 @@ void CapaDePresentacio::menuConsultes() {
         }
     }
 }
+
+// --- GESTIÓ USUARIS ---
+
+// Pide credenciales y llama al dominio para iniciar sesión
 void CapaDePresentacio::iniciarSessio() {
     string user, pwd;
     cout << "\n** Inici sessio **" << endl;
@@ -118,12 +134,16 @@ void CapaDePresentacio::iniciarSessio() {
     catch (exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
+
+// Pide confirmación y cierra la sesión actual
 void CapaDePresentacio::tancarSessio() {
     string confirm;
     cout << "\n** Tancar sessio **" << endl;
     cout << "Vols tancar la sessio (S/N): "; cin >> confirm; cin.ignore();
     if (confirm == "S" || confirm == "s") { CapaDeDomini::getInstance().tancarSessio(); cout << "Sessio tancada correctament!" << endl; }
 }
+
+// Recoge datos personales y registra un nuevo usuario en el sistema
 void CapaDePresentacio::registrarUsuari() {
     string nom, user, mail, pass; int edat;
     cout << "\n--- REGISTRAR NOU USUARI ---" << endl;
@@ -136,6 +156,8 @@ void CapaDePresentacio::registrarUsuari() {
     catch (exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
+
+// Muestra los datos del perfil del usuario logueado
 void CapaDePresentacio::consultarUsuari() {
     try {
         DTOUsuari dto = CapaDeDomini::getInstance().consultarUsuari();
@@ -149,6 +171,8 @@ void CapaDePresentacio::consultarUsuari() {
     catch (exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
+
+// Pide nuevos datos (opcionalmente) y actualiza el perfil del usuario
 void CapaDePresentacio::modificarUsuari() {
     try {
         DTOUsuari actual = CapaDeDomini::getInstance().consultarUsuari();
@@ -171,6 +195,8 @@ void CapaDePresentacio::modificarUsuari() {
     catch (exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
+
+// Pide contraseña y confirmación para borrar la cuenta del usuario
 void CapaDePresentacio::esborrarUsuari() {
     string password, confirmacio;
     cout << "\n** Esborrar usuari **" << endl;
@@ -183,100 +209,74 @@ void CapaDePresentacio::esborrarUsuari() {
     pausa();
 }
 
+// --- GESTIÓ RESERVES ---
 
+// Flujo para reservar Escapada: Nombre -> Info -> Confirmar -> Reservar (Plazas Auto)
 void CapaDePresentacio::reservarEscapada() {
     try {
         cout << "\n** Reservar escapada **" << endl;
         string nom, confirm;
-
-        // 1. Pedir nombre
-        cout << "Nom: ";
-        getline(cin, nom);
-
-        // 2. Mostrar info (sin reservar aún)
+        cout << "Nom: "; getline(cin, nom);
         DTOExperiencia dto = CapaDeDomini::getInstance().obtenirDadesExperiencia(nom);
 
         if (dto.obteTipus() == "ACTIVITAT") throw runtime_error("Aixo es una activitat.");
 
-        // Mostramos TODA la información requerida
+        // INFORMACIÓ ABANS DE CONFIRMAR
+        cout << "\n--- DETALLS ---" << endl;
         cout << "Descripcio: " << dto.obteDescripcio() << endl;
         cout << "Ciutat: " << dto.obteCiutat() << endl;
-        cout << "Nombre de places: " << dto.obteMaximPlaces() << endl;
-        cout << dto.obteDetalls() << endl; // Hotel y Nits
-        cout << "Preu: " << dto.obtePreu() << " eur" << endl;
+        cout << "Places totals: " << dto.obteMaximPlaces() << endl;
+        cout << dto.obteDetalls() << endl;
+        cout << "Preu total: " << dto.obtePreu() << " eur" << endl;
 
-        // 3. Confirmar
-        cout << "\nVols confirmar la reserva? (S/N): ";
-        cin >> confirm;
-        cin.ignore();
-
+        cout << "\nVols confirmar la reserva? (S/N): "; cin >> confirm; cin.ignore();
         if (confirm == "S" || confirm == "s") {
             CapaDeDomini::getInstance().reservarEscapada(nom);
             cout << "Reserva registrada correctament." << endl;
-            // Mostramos el precio aplicado (será el mismo que el mostrado si no hay descuento extra, pero lo mostramos igual)
-            cout << "Preu aplicat a la reserva: " << dto.obtePreu() << " eur" << endl;
+            cout << "Preu final aplicat: " << dto.obtePreu() << " eur" << endl;
         }
-        else {
-            cout << "Reserva cancel·lada." << endl;
-        }
+        else { cout << "Reserva cancel·lada." << endl; }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
 
+// Flujo para reservar Actividad: Nombre -> Info -> Personas -> Precio -> Confirmar -> Reservar
 void CapaDePresentacio::reservarActivitat() {
     try {
         cout << "\n** Reservar activitat **" << endl;
-        string nom, confirm;
-        int persones;
-
-        // 1. Pedir nombre
-        cout << "Nom: ";
-        getline(cin, nom);
-
-        // 2. Mostrar info
+        string nom, confirm; int persones;
+        cout << "Nom: "; getline(cin, nom);
         DTOExperiencia dto = CapaDeDomini::getInstance().obtenirDadesExperiencia(nom);
 
         if (dto.obteTipus() != "ACTIVITAT") throw runtime_error("Aixo no es una activitat.");
 
+        // INFORMACIÓ
+        cout << "\n--- DETALLS ---" << endl;
         cout << "Descripcio: " << dto.obteDescripcio() << endl;
         cout << "Ciutat: " << dto.obteCiutat() << endl;
-        cout << "Nombre maxim de places: " << dto.obteMaximPlaces() << endl;
-        cout << dto.obteDetalls() << endl; // Durada
+        cout << "Places max: " << dto.obteMaximPlaces() << endl;
+        cout << dto.obteDetalls() << endl;
         cout << "Preu per persona: " << dto.obtePreu() << " eur" << endl;
 
-        // 3. Pedir personas
-        cout << "\nNombre de persones: ";
-        cin >> persones;
-        cin.ignore();
-
-        // 4. Mostrar precio total
+        cout << "\nNombre de persones: "; cin >> persones; cin.ignore();
         float total = CapaDeDomini::getInstance().calcularPreuReserva(nom, persones);
+
         cout << "Preu total de la reserva: " << total << " eur" << endl;
-
-        // 5. Confirmar
-        cout << "Vols continuar amb la reserva? (S/N): ";
-        cin >> confirm;
-        cin.ignore();
-
+        cout << "Vols continuar amb la reserva? (S/N): "; cin >> confirm; cin.ignore();
         if (confirm == "S" || confirm == "s") {
             CapaDeDomini::getInstance().reservarActivitat(nom, persones);
             cout << "Reserva registrada correctament." << endl;
         }
-        else {
-            cout << "Reserva cancel·lada." << endl;
-        }
-
+        else { cout << "Reserva cancel·lada." << endl; }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
 
+// --- CONSULTES ---
 
+// Lista reservas del usuario con subtotales por tipo y total global
 void CapaDePresentacio::consultarReserves() {
     try {
         auto llista = CapaDeDomini::getInstance().consultarReserves();
@@ -287,75 +287,67 @@ void CapaDePresentacio::consultarReserves() {
             cout << "No tens cap reserva." << endl;
         }
         else {
-            // Càlcul de totals
+            // Variables per totals
             float totalGlobal = 0.0f;
             float totalEscapades = 0.0f;
             float totalActivitats = 0.0f;
 
+            // Calcular primer els totals
             for (const auto& r : llista) {
-                float preu = r.obtePreuPagat();
-                totalGlobal += preu;
-                if (r.obteExperiencia().obteTipus() == "ACTIVITAT") totalActivitats += preu;
-                else totalEscapades += preu;
+                float p = r.obtePreuPagat();
+                totalGlobal += p;
+                if (r.obteExperiencia().obteTipus() == "ACTIVITAT") totalActivitats += p;
+                else totalEscapades += p;
             }
 
-            // TOTAL GLOBAL
-            cout << ">>> PREU TOTAL PAGAT: " << std::fixed << std::setprecision(2) << totalGlobal << " eur" << endl << endl;
+            cout << "TOTAL PAGAT GLOBAL: " << std::fixed << std::setprecision(2) << totalGlobal << " eur" << endl << endl;
 
-            // LLISTA ESCAPADES
+            // LLISTA 1: ESCAPADES
             cout << "--- ESCAPADES ---" << endl;
-            bool hiHaEscapades = false;
+            bool hayEsc = false;
             for (const auto& r : llista) {
                 const auto& exp = r.obteExperiencia();
                 if (exp.obteTipus() != "ACTIVITAT") {
-                    hiHaEscapades = true;
+                    hayEsc = true;
                     cout << "Data: " << r.obteData() << " | Places: " << r.obteNumPlaces()
                         << " | Preu: " << r.obtePreuPagat() << " eur" << endl;
                     cout << "   " << exp.obteNom() << " (" << exp.obteCiutat() << ")" << endl;
                     cout << "   " << exp.obteDetalls() << endl;
-                    cout << "--------------------------------" << endl;
+                    cout << "   ----------------" << endl;
                 }
             }
-            if (!hiHaEscapades) cout << "(Cap escapada reservada)" << endl;
-            cout << "TOTAL ESCAPADES: " << totalEscapades << " eur" << endl << endl;
+            if (!hayEsc) cout << "(Cap escapada)" << endl;
+            cout << ">>> TOTAL ESCAPADES: " << totalEscapades << " eur" << endl << endl;
 
-            // LLISTA ACTIVITATS
+            // LLISTA 2: ACTIVITATS
             cout << "--- ACTIVITATS ---" << endl;
-            bool hiHaActivitats = false;
+            bool hayAct = false;
             for (const auto& r : llista) {
                 const auto& exp = r.obteExperiencia();
                 if (exp.obteTipus() == "ACTIVITAT") {
-                    hiHaActivitats = true;
+                    hayAct = true;
                     cout << "Data: " << r.obteData() << " | Places: " << r.obteNumPlaces()
                         << " | Preu: " << r.obtePreuPagat() << " eur" << endl;
                     cout << "   " << exp.obteNom() << " (" << exp.obteCiutat() << ")" << endl;
                     cout << "   " << exp.obteDetalls() << endl;
-                    cout << "--------------------------------" << endl;
+                    cout << "   ----------------" << endl;
                 }
             }
-            if (!hiHaActivitats) cout << "(Cap activitat reservada)" << endl;
-            cout << "TOTAL ACTIVITATS: " << totalActivitats << " eur" << endl;
+            if (!hayAct) cout << "(Cap activitat)" << endl;
+            cout << ">>> TOTAL ACTIVITATS: " << totalActivitats << " eur" << endl;
         }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
 
-
+// Busca experiencias por ciudad/plazas y muestra resultados en bloques separados
 void CapaDePresentacio::consultarExperiencies() {
     try {
         cout << "\n--- CERCAR EXPERIENCIES ---" << endl;
-        string ciutat;
-        int persones;
-
-        cout << "Ciutat: ";
-        getline(cin, ciutat);
-
-        cout << "Nombre de persones: ";
-        cin >> persones;
-        cin.ignore();
+        string ciutat; int persones;
+        cout << "Ciutat: "; getline(cin, ciutat);
+        cout << "Nombre de persones: "; cin >> persones; cin.ignore();
 
         auto llista = CapaDeDomini::getInstance().consultarExperiencies(ciutat, persones);
 
@@ -363,93 +355,85 @@ void CapaDePresentacio::consultarExperiencies() {
             cout << "No s'han trobat experiencies." << endl;
         }
         else {
-            // FORMAT VISUAL
-            cout << "\nResultats:" << endl;
+            // SEPARAR LLISTES I FORMAT VISUAL
+            cout << "\n=== ESCAPADES TROBADES ===" << endl;
             for (const auto& dto : llista) {
-                cout << "****************************************" << endl;
-                cout << " NOM: " << dto.obteNom() << endl;
-                cout << " TIPUS: " << dto.obteTipus() << endl;
-                cout << " DESCRIPCIO: " << dto.obteDescripcio() << endl;
-                cout << " CIUTAT: " << dto.obteCiutat() << endl;
-                cout << " PREU: " << dto.obtePreu() << " eur" << endl;
-                cout << " PLACES MAX: " << dto.obteMaximPlaces() << endl;
-                cout << " DETALLS: " << dto.obteDetalls() << endl;
-                cout << "****************************************" << endl;
+                if (dto.obteTipus() != "ACTIVITAT") {
+                    cout << "+----------------------------------------+" << endl;
+                    cout << "| NOM: " << dto.obteNom() << endl;
+                    cout << "| DESC: " << dto.obteDescripcio() << endl;
+                    cout << "| PREU: " << dto.obtePreu() << " eur  | MAX PLACES: " << dto.obteMaximPlaces() << endl;
+                    cout << "| DETALLS: " << dto.obteDetalls() << endl;
+                    cout << "+----------------------------------------+" << endl;
+                }
+            }
+
+            cout << "\n=== ACTIVITATS TROBADES ===" << endl;
+            for (const auto& dto : llista) {
+                if (dto.obteTipus() == "ACTIVITAT") {
+                    cout << "+----------------------------------------+" << endl;
+                    cout << "| NOM: " << dto.obteNom() << endl;
+                    cout << "| DESC: " << dto.obteDescripcio() << endl;
+                    cout << "| PREU: " << dto.obtePreu() << " eur  | MAX PLACES: " << dto.obteMaximPlaces() << endl;
+                    cout << "| DETALLS: " << dto.obteDetalls() << endl;
+                    cout << "+----------------------------------------+" << endl;
+                }
             }
         }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
 
-
+// Muestra las 10 últimas experiencias añadidas
 void CapaDePresentacio::consultaNovetats() {
     try {
         auto novetats = CapaDeDomini::getInstance().consultarNovetats();
         cout << "\n--- NOVETATS (Ultimes 10) ---" << endl;
-        if (novetats.empty()) cout << "Cap experiencia disponible." << endl;
-
         for (const auto& dto : novetats) {
-            cout << "Nom: " << dto.obteNom() << endl;
-            cout << "Descripcio: " << dto.obteDescripcio() << endl;
-            cout << "Ciutat: " << dto.obteCiutat() << endl;
-            cout << "Places: " << dto.obteMaximPlaces() << endl;
-            cout << "Preu: " << dto.obtePreu() << endl;
-            cout << "Detalls: " << dto.obteDetalls() << endl;
-            cout << "Tipus: " << dto.obteTipus() << endl;
-            cout << "-----------------" << endl;
+            cout << "[" << dto.obteTipus() << "] " << dto.obteNom()
+                << " (" << dto.obteCiutat() << ") - " << dto.obtePreu() << " eur" << endl;
+            cout << "   " << dto.obteDetalls() << endl;
         }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }
 
+// Muestra el Top 5 de Escapadas y Actividades más reservadas
 void CapaDePresentacio::consultarMesReservades() {
     try {
         auto llista = CapaDeDomini::getInstance().consultarMesReservades();
         cout << "\n--- TOP 5 MES RESERVADES ---" << endl;
-
         if (llista.empty()) {
             cout << "Encara no hi ha reserves." << endl;
         }
         else {
-            // Top 5 Escapades
             cout << "\n[ESCAPADES]" << endl;
             int count = 0;
             for (const auto& dto : llista) {
                 if (dto.obteTipus() != "ACTIVITAT") {
                     count++;
-                    cout << "#" << count << " " << dto.obteNom() << endl;
-                    cout << "   " << dto.obteDescripcio() << ", " << dto.obteCiutat() << endl;
-                    cout << "   Places: " << dto.obteMaximPlaces() << ", Preu: " << dto.obtePreu() << endl;
-                    cout << "   " << dto.obteDetalls() << endl;
-                    if (count == 5) break; // Límit 5
+                    cout << "#" << count << " " << dto.obteNom() << " (" << dto.obteNumReserves() << " reserves)" << endl;
+                    cout << "   " << dto.obteDescripcio() << endl;
+                    if (count == 5) break;
                 }
             }
             if (count == 0) cout << "Cap." << endl;
 
-            // Top 5 Activitats
             cout << "\n[ACTIVITATS]" << endl;
             count = 0;
             for (const auto& dto : llista) {
                 if (dto.obteTipus() == "ACTIVITAT") {
                     count++;
                     cout << "#" << count << " " << dto.obteNom() << endl;
-                    cout << "   " << dto.obteDescripcio() << ", " << dto.obteCiutat() << endl;
-                    cout << "   Places: " << dto.obteMaximPlaces() << ", Preu: " << dto.obtePreu() << endl;
-                    cout << "   " << dto.obteDetalls() << endl;
-                    if (count == 5) break; // Límit 5
+                    cout << "   " << dto.obteDescripcio() << endl;
+                    if (count == 5) break;
                 }
             }
             if (count == 0) cout << "Cap." << endl;
         }
     }
-    catch (const std::exception& e) {
-        cout << "Error: " << e.what() << endl;
-    }
+    catch (const std::exception& e) { cout << "Error: " << e.what() << endl; }
     pausa();
 }

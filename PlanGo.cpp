@@ -3,25 +3,25 @@
 #include <locale>
 #include "CapaDePresentacio.hxx"
 
+// Función principal: Punto de entrada de la aplicación
 int main() {
-    // Configuración opcional para mostrar acentos en la consola (según Lab 1)
+    // Configuración regional para admitir caracteres especiales (acentos, etc.)
     try {
         std::locale::global(std::locale(""));
     }
     catch (...) {
-        // Si falla la configuración regional, continuamos sin ella
+        // Si falla la configuración local, continuamos con la estándar
     }
 
     try {
-        // --- PUNTO DE ENTRADA ---
-        // Delegamos el control a la Capa de Presentación.
-        // El método inici() contiene el bucle del menú principal (No Loggejat).
+        // --- INICIO DEL PROGRAMA ---
+        // Delegamos el control a la Capa de Presentación para iniciar la interfaz
         CapaDePresentacio::getInstance().inici();
     }
     catch (const std::exception& e) {
-        // Capturamos cualquier error fatal que no haya sido controlado antes
+        // Captura de errores fatales no controlados en capas inferiores
         std::cerr << "\nERROR FATAL: " << e.what() << std::endl;
-        system("pause"); // Pausa para leer el error antes de salir
+        system("pause");
         return 1;
     }
     catch (...) {
@@ -30,8 +30,7 @@ int main() {
         return 1;
     }
 
-    // Pausa final para que la ventana no se cierre de golpe al salir ordenadamente
-    // (Útil si ejecutas fuera de Visual Studio o si VS no pausa automáticamente)
+    // Pausa final para visualizar la salida antes de cerrar la ventana de consola
     system("pause");
     return 0;
 }
